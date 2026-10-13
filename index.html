@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>わんダーローブ</title>
+<style>
+:root{--ink:#2B3A46;--collar:#FF7A3C;--cream:#FFF9EF;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:"M PLUS Rounded 1c","Hiragino Maru Gothic ProN",system-ui,sans-serif;background:var(--ink);}
+#app{width:100%;height:100dvh;position:relative;overflow:hidden;background:#BFE3F2;}
+canvas{display:block;}
+#three canvas{touch-action:none;}
+#topBar{position:absolute;top:0;left:0;right:0;z-index:10;display:flex;align-items:flex-start;justify-content:space-between;padding:12px 12px 0;pointer-events:none;padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right));padding-top:max(12px,env(safe-area-inset-top));}
+/* 名前の行。全員ぶん縦に並ぶ。いま相手をしている子だけ枠を濃くする */
+.dogRow{display:flex;align-items:center;gap:6px;pointer-events:auto;}
+.dogDot{width:16px;height:16px;border-radius:50%;border:2px solid var(--ink);flex:none;box-shadow:0 2px 0 rgba(43,58,70,.25);cursor:pointer;}
+.dogRow input{pointer-events:auto;border:2px solid rgba(43,58,70,.35);background:rgba(255,249,239,.82);font-family:inherit;font-weight:800;font-size:13px;color:var(--ink);padding:5px 10px;border-radius:999px;width:118px;box-shadow:0 2px 0 rgba(43,58,70,.18);}
+.dogRow.lead input{border-color:var(--ink);background:var(--cream);font-size:14px;padding:7px 12px;width:130px;box-shadow:0 2px 0 rgba(43,58,70,.25);}
+.dogRow.lead .dogDot{width:18px;height:18px;}
+/* ドッグランで飼い主の足もとに待っている子（src/app/dogrun.ts）。名前は少し引っ込めて、
+   となりの 🔄 で交代する。⚠ 指で押せる大きさ（32px）にする */
+.dogRow.waiting input{opacity:.72;}
+.dogSwapBtn{pointer-events:auto;flex:none;width:32px;height:32px;border-radius:50%;border:2px solid var(--ink);background:var(--cream);font-size:15px;line-height:1;padding:0;box-shadow:0 2px 0 rgba(43,58,70,.25);cursor:pointer;}
+/* ドッグランでお留守番の ねこ（src/app/dogrun.ts。ねこは連れていかない）。名前を引っ込めて 🏠 を添える。
+   ⚠ ボタンの形にしない（交代の 🔄 と見まちがえない）。押すと「おるすばん」と返す */
+.dogRow.home input{opacity:.5;}
+.dogRow.home .dogDot{opacity:.5;}
+.dogHomeMark{pointer-events:auto;flex:none;font-size:16px;line-height:1;opacity:.85;cursor:pointer;}
+#walletRow{display:flex;gap:6px;align-items:center;}
+/* 🔊／🔇（src/ui/soundUi.ts）。⚠ 上の段は指を通す（pointer-events:none）ので、これだけ押せるようにする */
+#soundBtn{pointer-events:auto;font-size:15px;line-height:1;padding:7px 10px;min-width:40px;min-height:34px;}
+#soundBtn.off{opacity:.75;}
+#wallet{background:var(--cream);border:2px solid var(--ink);border-radius:999px;padding:6px 12px;font-weight:800;font-size:13px;color:var(--ink);box-shadow:0 2px 0 rgba(43,58,70,.25);}
+/* 大画面モード：しばらく触らないと上下のUIが消える（src/ui/bigScreen.ts）。
+   visibility も一緒に切るのは、透明なまま押せてしまうのを防ぐため
+   （子要素が pointer-events:auto を持っているので、親を none にしても効かない） */
+/* 消えるのはゆっくり、戻るのはすぐ。visibility の切り替えを消える側だけに書くと、
+   戻すときは即座に visible になる（フェードを待つ間ボタンが押せないのを防ぐ） */
+#topBar,#dock{transition:opacity .18s;}
+#app.zen #topBar,#app.zen #dock{opacity:0;visibility:hidden;transition:opacity .45s,visibility .45s;}
+/* 散歩のあいだは、ふだんのUIを引っ込める。歩きながらきせかえもごはんも要らないし、
+   出しっぱなしだと「いま散歩している」に見えない */
+#app.strolling #topBar,#app.strolling #dock,#app.strolling #hint{display:none;}
+#app.zen-instant #topBar,#app.zen-instant #dock{transition:none;}
+#hint{position:absolute;top:60px;left:50%;transform:translateX(-50%);background:rgba(43,58,70,.82);color:#fff;font-size:12px;font-weight:800;padding:8px 14px;border-radius:999px;z-index:10;white-space:nowrap;transition:opacity .4s;pointer-events:none;}
+#trimRotateHint{position:absolute;top:max(102px,calc(env(safe-area-inset-top) + 76px));left:50%;transform:translateX(-50%);z-index:9;display:none;pointer-events:none;white-space:nowrap;background:rgba(43,58,70,.84);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:999px;padding:7px 13px;font-size:11px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,.2);}
+#dock{position:absolute;left:0;right:0;bottom:0;z-index:10;padding:10px 12px calc(12px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:8px;pointer-events:none;}
+.row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;pointer-events:auto;}
+.pill{border:2px solid var(--ink);background:var(--cream);color:var(--ink);font-family:inherit;font-weight:800;font-size:12px;padding:8px 12px;border-radius:999px;cursor:pointer;box-shadow:0 3px 0 rgba(43,58,70,.28);}
+.pill:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(43,58,70,.28);}
+.pill.on{background:var(--ink);color:#fff;}
+.pill.hero{background:var(--collar);color:#fff;border-color:#D45A1F;box-shadow:0 3px 0 #D45A1F;font-size:15px;padding:9px 16px;}
+.pill.mini{font-size:11px;padding:7px 10px;}
+.pill.place{background:#5CA96C;color:#fff;border-color:#3E7E4E;box-shadow:0 3px 0 #3E7E4E;}
+.pill.tab.on{background:var(--ink);color:#fff;}
+.panel{display:none;background:rgba(43,58,70,.45);border-radius:20px;padding:8px;backdrop-filter:blur(3px);pointer-events:auto;}
+.panel.open{display:flex;}
+/* パネルを縦に割って見出しを付ける（型は「せいかく」の画面と同じ）。
+   ⚠ 同じ見た目のボタンが11個並ぶと、読む前に諦める（とくにお年寄り） */
+.panel.col{flex-direction:column;align-items:stretch;}
+.panelHead{color:#fff;font-weight:800;font-size:11px;line-height:1.35;padding:1px 6px 0;text-align:left;}
+/* ⚠ **タブは2行の固定グリッド。** flex-wrap の折り返しに任せると、
+   320px でどこで折れるかが偶然になる（前は「ショップ」のところで折れていた） */
+#mainBar{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+/* 下のボタンの字は 14px（引き出しの中と同じ。2026-10-02 の利用者が絵で選んだ。前は .pill の 12px のまま）。
+   ⚠ 3画面（320×568・390×844・914×411）で はみ出さない・折り返さないことを測った（ボタンが 3px 高くなるだけ） */
+#mainBar .pill{white-space:nowrap;padding-left:6px;padding-right:6px;text-align:center;overflow:hidden;}
+/* ⚠⚠ 端末の「文字の大きさ」を大きくしていると、字だけが はみ出す（Fold の外側・幅352・文字130% で 12px 切れた。2026-10-05）。
+   はみ出したら `--fit` で収まるまで縮める（src/ui/fitText.ts）。はみ出さない画面では 14px のまま */
+#mainBar .pill:not(.hero){font-size:calc(14px * var(--fit, 1));}
+/* 🐾 おねがい（設計書 12章）。「🎤 こえで言ってもOK！」の一言と、
+   場面で使えないものの理由（「こうえんで あそべるよ」）。
+   ⚠ 理由は **`::after` の生成内容**で出す。値札の付け替え（controls.ts の refreshWallet）は
+      `textContent` を書き換えるので、子要素で持たせると毎回消える。 */
+#drawerBody .askNote{font-size:12px;font-weight:800;color:#6B7A86;padding:0 2px;margin:0 0 2px;line-height:1.4;}
+#drawerBody .pill[data-why]{flex-direction:column;gap:2px;}
+#drawerBody .pill[data-why]::after{content:attr(data-why);font-size:10px;font-weight:700;line-height:1.2;}
+/* ⚠ **隠さない、薄くするだけ。** 消すと「買ったのに無くなった」になる（設計書 12章）。
+   押せるままにしておく——押したときの返事（「こうえんで あそぼう！」）が案内になる */
+#drawerBody .pill.dim{opacity:.5;}
+/* 🔊 こえ（src/ui/voiceUi.ts）。声の種類は 2列（字が長いので ほかの段より広く） */
+#panel-voice .voiceTypes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+#panel-voice .voiceType{display:flex;flex-direction:row;align-items:center;gap:6px;justify-content:flex-start;text-align:left;padding:8px 10px;line-height:1.25;}
+#panel-voice .voiceType .vText{display:flex;flex-direction:column;min-width:0;}
+/* ⚠ 字の大きさは `var(--fit)` を掛ける（はみ出したら縮める。src/ui/fitText.ts。文字 130% の Fold で「キャン」やわらか が 11px 切れた） */
+#panel-voice .voiceType b{font-size:calc(14px * var(--fit, 1));white-space:nowrap;}
+#panel-voice .voiceType small{font-size:calc(11px * var(--fit, 1));font-weight:700;opacity:.75;white-space:nowrap;}
+#panel-voice .voiceType .vPlay{flex:none;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--ink);color:#fff;font-size:10px;}
+#panel-voice .voiceType.on{background:#FFE7D3;border-color:var(--collar);color:var(--ink);}
+#panel-voice .voiceSlider{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;color:#6B7A86;}
+/* ⚠ つまみは「✨ みためを こまかく」と同じ大きさ・同じ たての扱い（touch-action:pan-y。掴む向きの見きわめは src/ui/voiceUi.ts でも） */
+#panel-voice .voiceSlider input[type=range]{flex:1;min-width:0;-webkit-appearance:none;appearance:none;height:44px;background:transparent;margin:0;touch-action:pan-y;}
+#panel-voice .voiceSlider input[type=range]::-webkit-slider-runnable-track{height:12px;border-radius:6px;background:#EADFCF;border:2px solid var(--ink);}
+#panel-voice .voiceSlider input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:32px;height:32px;border-radius:50%;background:var(--collar);border:3px solid var(--ink);box-shadow:0 2px 0 rgba(43,58,70,.28);margin-top:-12px;cursor:pointer;}
+#panel-voice .voiceSlider input[type=range]::-moz-range-track{height:12px;border-radius:6px;background:#EADFCF;border:2px solid var(--ink);}
+#panel-voice .voiceSlider input[type=range]::-moz-range-thumb{width:32px;height:32px;border-radius:50%;background:var(--collar);border:3px solid var(--ink);cursor:pointer;}
+#panel-voice .voiceCapture{display:flex;flex-direction:column;gap:8px;margin-top:4px;}
+#panel-voice .voiceWave{width:100%;height:64px;border:2px solid var(--ink);border-radius:12px;background:#fff;}
+#panel-voice .voiceSeg.on,#panel-voice .voiceKind.on{background:#FFE7D3;border-color:var(--collar);color:var(--ink);}
+/* 見つけた鳴き声の番号（6つまで）。⚠ 段の升目（140px）に入れると 3つめが右へ はみ出した（絵で見つけた）→ 折り返す並びにする */
+#panel-voice .voiceCapture .segRow{display:flex;flex-wrap:wrap;gap:8px;}
+/* ---- 🏷️ あだ名（src/ui/nickUi.ts。2026-10-04 の利用者が絵で選んだ 案B：1つ書いて「たす」→ 札が並ぶ）----
+   ⚠ 段の升目（140px の2列）には入れない：札は字の長さぶんの幅で折り返す（10こでも4段ほどに収まる）。
+   ⚠ 札は 高さ44px・字15px（引き出しの「大きいボタン」56px より低いが、指で押せる大きさ。10こを並べるため） */
+#panel-nick .nickAdd{display:flex;align-items:center;gap:8px;margin:2px 0 6px;}
+#panel-nick .nickAdd input{flex:1 1 auto;min-width:0;font:inherit;font-size:16px;font-weight:800;color:var(--ink);
+  padding:10px 12px;border-radius:14px;border:2px solid #E2D9C9;background:#fff;}
+#panel-nick .nickAdd input:focus{outline:none;border-color:var(--collar);}
+#panel-nick .nickAdd .pill{flex:none;min-height:48px;padding:0 16px;}
+#panel-nick .nickChips{display:flex;flex-wrap:wrap;gap:8px;}
+#panel-nick .nickChips .pill{flex:none;min-height:44px;padding:0 12px;font-size:15px;word-break:keep-all;}
+#panel-nick .nickMsg{color:#C2410C;}
+#panel-voice .voiceCapture .segRow .pill{min-width:64px;flex:0 0 auto;}
+/* ⚠⚠ **「あそぶ」を3列1段にする案は、撮ってやめた。** 2列だと2段になって、その 64px が
+   そのまま「わざ」の見出しを折り返しの外へ押し出す——ので3列にしてみたが、320×568 では
+   ボタンが 93px（中 73px）になり、**「🥏 フリスビ／ー ¥100」と語の途中で折れた**。
+   ⚠⚠ **語ごとの幅では見抜けない**（「フリスビー」は 50px で 73px に収まる）。折れたのは
+   **1行目の「🥏 フリスビー」（絵文字＋すき間＋語＝73px ちょうど）**がはみ出したから。
+   **数字だけ見て通しかけた。絵を撮って気づいた。**（列の下限 140px は、そもそも実機の絵で
+   「うちの子い／ちらん」を踏んで決めた線。ここでも同じ形を踏んだ）
+   → 代わりに**見出しの順を入れ替えた**（たべる → **わざ** → あそぶ → おうち。利用者の承認）。 */
+/* ---- 🗂 引き出し（ボトムシート）。設計書 11章 (1) ----------------------
+   ⚠ **積み上げない。** 前は開いたパネルがドックの上へ足されて、犬の上に雲のように
+      重なった（320×568 で「うちの子」を開くと犬が 100% 隠れた）。いまは高さを
+      頭打ちにして、あふれたぶんは**中がスクロール**する。
+   ⚠ **中のボタンは id も動きも変えていない。** 入れ物だけを差し替えてある。
+   ⚠ 文字とタップの大きさ（14px・56px）はここに吸収した。設計書 6章の Phase 2 を
+      新しく作るところにだけ先に当てた形——**新しく作るものを小さく作る理由が無い**。 */
+#drawer{
+  display:none;flex-direction:column;gap:8px;pointer-events:auto;min-height:0;
+  /* ドックの内側の余白を打ち消して、画面の端から端まで届かせる */
+  margin:2px -12px calc(-12px - env(safe-area-inset-bottom));
+  padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+  background:var(--cream);border-top:2px solid var(--ink);border-radius:22px 22px 0 0;
+  box-shadow:0 -8px 26px rgba(0,0,0,.3);
+  /* ⚠ 高さの頭打ち。**画面の割合と画素の両方**で抑える——
+     背の高い端末で 40dvh を取ると、ボタン3段ぶんより大きな板が出て犬の場所を食う。
+     264px ＝ 題名の段＋56px のボタン 3段ぶん。あふれたら中がスクロールする。 */
+  max-height:min(36dvh,264px);
+}
+#dock.drawer-open #drawer{display:flex;}
+/* ⚠⚠ **「🐾 おねがい」だけ高くする**（設計書 12章の追記。class は src/ui/hud.ts が付ける）。
+   ふつうの高さだと、たて画面で **「わざ」の見出しが 1px も出ない**——
+   **画面に出ていない機能は、初心者には存在しない**（ボールが声でしか遊べなかったのと同じ）。
+   ⚠⚠ **50dvh は実測で決めた線**（320×568）。**犬の描いた画素の高さ 100px を下限**にして、
+      そこまで上げられるいちばん高いところ：引き出し 284px・わざの見出し 15/16px・**犬 103px**。
+      1つ上げると（52dvh）犬は 98px、「1行目が半分のぞく」56dvh では **85px** まで痩せる。
+      **犬が主役なので、下限のほうを優先した。**
+   ⚠ 300px の頭打ちは背の高い端末むけ（390×844 で 50dvh＝422px は出しすぎ）。
+      背の高い画面は同じ 300px でも中身が 231px 見えるので、**1行目の頭までのぞく**。
+   ⚠ **高くしたぶんは犬がよける**（app/animate.ts の applyViewStage）。実測で
+      320×568・390×844 とも隠れ 0%・頭 0% のまま。**しきいは 1つも動かしていない。** */
+#dock.drawer-tall #drawer{max-height:min(50dvh,300px);}
+/* ⚠ シートが開いているあいだ、タブの段は隠す（いまどこに居るかは題名が示す）。
+   ⚠ **ドックに残っているのはこの段だけ**（ごはん・おやつの直置き段は 🐾 おねがいへ入った。
+      設計書 12章）。だから物差し（tools/dogVisibleProbe.mjs）が「UI が消えていないか」を
+      見張るときは `#mainBar` ではなく **`#dock`** を見る——ここはわざと消える。 */
+#dock.drawer-open #mainBar{display:none;}
+#drawerHead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex:none;}
+#drawerTitle{font-weight:900;font-size:15px;color:var(--ink);padding-left:4px;line-height:1.3;}
+#drawerClose{flex:none;font-size:13px;padding:9px 14px;}
+/* ⚠⚠ **あふれていることが、見て分かるようにする。**
+   「🐾 おねがい」は中身が 408px あって、いちばん狭い画面では 135px しか見えない——
+   **わざ（お手・おすわり…）が 0% しか見えない**（実測。下の表は README）。
+   高さの頭打ちは犬の場所を守るためのもので緩められないので、代わりに
+   **下に影を出して「まだ続きがある」を見せる**（上下とも。よくある巻物の型）。
+   ⚠ `local` の2枚（クリーム色）が端を塗り、`scroll` の2枚（影）はあふれているときだけ
+   その下から覗く——**あふれていなければ、影は出ない**。JS も高さの測り直しも要らない。 */
+#drawerBody{
+  overflow-y:auto;overscroll-behavior:contain;min-height:0;padding:1px 0 2px;
+  background:
+    linear-gradient(var(--cream) 40%, rgba(255,249,239,0)) top / 100% 16px no-repeat local,
+    linear-gradient(rgba(255,249,239,0), var(--cream) 60%) bottom / 100% 16px no-repeat local,
+    radial-gradient(farthest-side at 50% 0, rgba(43,58,70,.26), rgba(43,58,70,0)) top / 100% 9px no-repeat scroll,
+    radial-gradient(farthest-side at 50% 100%, rgba(43,58,70,.26), rgba(43,58,70,0)) bottom / 100% 9px no-repeat scroll;
+}
+/* 中の段は、板ではなく素の並びにする（シートそのものが板なので二重にしない） */
+#drawerBody .panel{background:none;padding:0;backdrop-filter:none;border-radius:0;}
+#drawerBody .panel.open,
+#drawerBody .panel.col .row{
+  /* ⚠⚠ **列の下限は 140px。** 120px にしていたら実機（411px 幅）で3列になり、
+     「うちの子いちらん」が **「うちの子い／ちらん」と語の途中で折れた**（撮って気づいた）。
+     140px なら 320〜411px の端末は2列、幅の広い画面だけ3列になる。
+     ⚠ 文字を小さくして詰めるのは逆（要望は「お年寄りにも分かりやすく」）。 */
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;
+  max-width:460px;margin-left:auto;margin-right:auto;
+}
+/* 見出しで2つに割った「うちの子」だけは、見出し＋段の縦積み */
+#drawerBody .panel.col.open{display:block;max-width:460px;margin:0 auto;}
+#drawerBody .panelHead{color:var(--ink);font-size:12px;text-align:left;padding:0 2px;margin:2px 0 6px;}
+#drawerBody .panel.col .row + .panelHead{margin-top:12px;}
+/* 「この子のこと」の下の「いっしょに ○日」（src/app/bond.ts）。見出しより少し大きく、でも札（ボタン）には見えないように素の字で */
+#dogTogether{color:var(--ink);font-weight:800;font-size:14px;line-height:1.35;text-align:left;padding:0 2px;margin:-2px 0 8px;}
+/* ⚠ **大きいボタン**（設計書 11章）。高さ 56px・文字 14px・絵文字＋ことば。
+   ⚠ 小さくして詰めない——要望は「お年寄りにも分かりやすく」なので向きが逆 */
+#drawerBody .pill{
+  min-height:56px;font-size:14px;padding:8px 10px;line-height:1.3;
+  display:flex;align-items:center;justify-content:center;text-align:center;
+}
+#drawerBody .pill.mini{min-height:50px;font-size:13px;}
+/* ドッグランの入りかた（案C。2026-09-28 の利用者が選んだ絵）：3つを **1行に**、引き出しの升目を横いっぱいに使う。
+   ⚠ 升目のままだと 2＋1 の2段に割れて、3つめが引き出しの外（下）へ出た（tools/dogrunNetTest.mjs の [1] で測った） */
+#drawerBody .miniRow{grid-column:1/-1;display:flex;gap:6px;}
+#drawerBody .miniRow .pill{flex:1 1 0;min-width:0;padding:6px 4px;word-break:keep-all;}
+/* ⚠ 折り返すのは空白だけ（keep-all）。320×568 では「へやを つく／る」「番号で は／いる」と語の途中で折れた（撮って気づいた。
+   「うちの子い／ちらん」と同じ）。1語が収まらなければ はみ出すので、検査の「字が はみ出さない」が捕まえる */
+/* ---- ✨ ねこの調整スタジオ（src/cat/catStudio.ts。設計 docs/pet-studio-design.md 4章）----
+   引き出しと同じ「下から出る板」だが、**中身の背が高い**ので専用の高さを持つ。
+   ⚠⚠ **高さは実測で決めた**（320×568）。ここを上げるほど猫の場所が減る——
+      `applyViewStage` の縮尺には下限（1-STAGE_MAX = 0.3）があって、そこに当たると
+      **よけきれずに猫が隠れる**。物差しは tools/catStudioProbe.mjs。
+   ⚠ 引き出し（36dvh）より高く、「🐾 おねがい」（50dvh）よりさらに高い。
+      スライダーは1本 62px あるので、この高さでも中はスクロールする（それでよい——
+      **タブで6枚に割ってある**ので、1画面に出るのは 4〜7本だけ）。 */
+#studio{
+  display:none;flex-direction:column;gap:6px;pointer-events:auto;min-height:0;
+  margin:2px -12px calc(-12px - env(safe-area-inset-bottom));
+  padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+  background:var(--cream);border-top:2px solid var(--ink);border-radius:22px 22px 0 0;
+  box-shadow:0 -8px 26px rgba(0,0,0,.3);
+  max-height:min(44dvh,272px);
+}
+#dock.studio-open #studio{display:flex;}
+/* ⚠ 開いているあいだ、タブの段と引き出しは隠す（同じ場所を取り合う）。
+   ⚠ 戻る道は「とじる」1本（Android の戻るボタンも同じところへ着く。app/nativeShell.ts） */
+#dock.studio-open #mainBar,#dock.studio-open #drawer{display:none;}
+/* 👕 きせかえ・ショップ（src/ui/shopUi.ts・docs/shop-design.md。案B「試着室で ためす」）。
+   ⚠ スタジオと同じ形（#dock の中の 下の段）。上半分は 試着室（無地の背景）の うちの子。
+   ⚠ 高さは 画面の 56%（絵の案B と同じ割合）。中の カードの段だけ スクロールする */
+#shop{
+  display:none;flex-direction:column;gap:7px;pointer-events:auto;min-height:0;
+  margin:2px -12px calc(-12px - env(safe-area-inset-bottom));
+  padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+  background:var(--cream);border-top:2px solid var(--ink);border-radius:22px 22px 0 0;
+  box-shadow:0 -8px 26px rgba(0,0,0,.3);
+  height:min(56dvh,480px);
+}
+#dock.shop-open #shop{display:flex;}
+/* 確認の板（#sheet）が出ているあいだは、後ろのショップを触れなくする（src/ui/sheet.ts。docs/audit-2026-10-11.md §2.6） */
+body.sheetOpen #shop{pointer-events:none;}
+#dock.shop-open #mainBar,#dock.shop-open #drawer,#dock.shop-open #goRow{display:none;}
+/* ⚠ 上の おしらせ（#hint）と 回転ヒントは 試着室の上に かぶる。回すのは段の題の下に1行で書く。
+   ⚠ 回転ヒントは trimUi.ts が style を直に書くので !important（インラインに勝つ） */
+#app.shop-on #hint,#app.shop-on #trimRotateHint{display:none!important;}
+/* 試着室では 犬の吹き出し（.float。「ここほれワンワン！」など）を出さない——帽子に かぶって 着た姿が見えない（2026-09-30 の絵で見た） */
+#app.shop-on .float{display:none!important;}
+#shopHead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex:none;}
+#shopTitle{font-weight:900;font-size:15px;color:var(--ink);padding-left:4px;line-height:1.3;}
+#shopNote{font-size:10px;font-weight:800;color:#6B7A86;padding-left:4px;line-height:1.3;}
+.shopThumbAlt{display:flex;align-items:center;justify-content:center;width:100%;aspect-ratio:5/3;background:#F1E7DA;border-bottom:2px solid #EADFCF;font-size:34px;}
+#shopClose{flex:none;font-size:13px;padding:9px 14px;}
+.shopSec{font-size:11px;font-weight:800;color:#6B7A86;padding:0 4px;flex:none;}
+#shopWearing{display:flex;flex-wrap:wrap;gap:6px;flex:none;min-height:30px;align-items:center;}
+.shopChip{display:inline-flex;align-items:center;gap:5px;border:2px solid var(--collar);background:#FFE7D3;color:var(--ink);border-radius:999px;padding:3px 4px 3px 10px;font-weight:800;font-size:12px;font-family:inherit;cursor:pointer;min-height:36px;}
+.shopChip.own{border-color:var(--ink);background:#fff;}
+.shopChip i{font-style:normal;background:var(--ink);color:#fff;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;flex:none;}
+.shopNone{font-size:12px;font-weight:700;color:#6B7A86;padding:0 4px;}
+/* タブ。しるしを上・名前を下にして 6つを1列に（2026-09-30：名前を横に並べたら「くび」だけ2段目に広がった）。
+   ⚠ 狭い画面では折り返す（横スクロールにすると 隠れているタブに気づけない。スタジオと同じ考え）。どのタブも同じ幅
+   ⚠ 最小 44px：袖つきニットで 6つになり、52px では 320px の画面で 2段に折れた（段の幅 296px）。44px なら 1列・字 1.3倍でも 3字が入る（.tmp/knit/tabs-320.png） */
+#shopTabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(44px,1fr));gap:5px;flex:none;}
+#shopTabs .pill{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-height:46px;font-size:11px;line-height:1.15;padding:4px 2px;border-radius:12px;text-align:center;word-break:keep-all;}
+#shopTabs .pill i{font-style:normal;font-size:18px;line-height:1.1;}
+#shopTabs .pill.on{background:var(--ink);color:#fff;}
+#shopBody{
+  flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-content:start;padding:2px 1px 4px;
+  /* ⚠ 段の高さはカードの中身で決める（max-content）。決めないと、段が低いときにカードのほうが押しつぶされて
+     （カードは overflow:hidden なので 縮んでよいことになる）、絵の上の端だけが見え、ずらしても名前と値段が出てこなかった
+     （2026-10-05・文字 130% の Fold の外側。カード 37px に つぶれていた） */
+  grid-auto-rows:max-content;
+}
+.shopCard{position:relative;display:flex;flex-direction:column;border:2px solid var(--ink);border-radius:16px;background:#fff;overflow:hidden;padding:0;font-family:inherit;color:var(--ink);text-align:left;cursor:pointer;box-shadow:0 2px 0 rgba(43,58,70,.2);}
+.shopCard.on{border-color:var(--collar);box-shadow:0 0 0 3px rgba(255,122,60,.35);}
+.shopCard img{display:block;width:100%;aspect-ratio:5/3;object-fit:cover;background:#F1E7DA;border-bottom:2px solid #EADFCF;}
+.shopCard b{font-size:13.5px;padding:6px 8px 0;line-height:1.3;}
+.shopCard .price{font-size:13px;font-weight:900;color:#D45A1F;padding:2px 8px 8px;}
+.shopCard .price.own{color:#6B7A86;}
+.shopCard .badge{position:absolute;top:6px;right:6px;background:var(--collar);color:#fff;border-radius:999px;font-size:11px;font-weight:900;padding:2px 8px;}
+#shopBuyBar{flex:none;display:flex;align-items:center;gap:10px;border-top:2px solid #EADFCF;padding-top:8px;}
+/* ⚠ 折るのは空白のところ（keep-all）。文字 130% の Fold の外側で「ぜんぶ もっている ふ／くだよ」と語の途中で折れた（2026-10-05） */
+#shopTotal{flex:1;min-width:0;font-size:13px;font-weight:800;color:var(--ink);line-height:1.35;word-break:keep-all;overflow-wrap:anywhere;}
+#shopTotal b{font-size:19px;color:#D45A1F;}
+#shopTotal small{display:block;font-size:11px;font-weight:700;color:#6B7A86;}
+#shopBuy{flex:none;font-size:16px;padding:11px 18px;}
+#shopBuy[disabled]{opacity:.45;cursor:default;}
+/* 背の低い縦画面（320×568 など）：段を詰める（2026-09-30。そのままだと 札が2段・タブが2段で カードの行が 0px までつぶれ、「かう」が下で切れた）。
+   回す案内と「えらんでいるもの」の見出しは畳む・札は 1列で横に流す・カードの絵は 少し低く・段は 画面の 60% まで */
+@media (orientation:portrait) and (max-height:700px){
+  #shop{height:min(62dvh,480px);gap:6px;padding-top:8px;}
+  #shopTabs .pill{min-height:42px;}
+  #shopNote,#shopWearing .shopSec{display:none;}
+  #shopWearing{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;min-height:36px;}
+  #shopWearing .shopChip{flex:none;}
+  #shopClose{padding:7px 12px;}
+  .shopCard img,.shopThumbAlt{aspect-ratio:2/1;}
+  #shopBuyBar{padding-top:6px;}
+  #shopBuy{padding:9px 16px;}
+}
+/* ⚠⚠ **測って詰める**（src/ui/shopUi.ts の fitShopLayout）：品物の段に カード1段（絵・名前・値段）が入らなければ、
+   上の「背の低い縦画面」と同じに詰める。それでも入らなければ、足りないぶんだけ 段を高くする（JS が height を書く。試着室の犬は小さくなる）。
+   2026-10-05：端末の「文字の大きさ」130% の Pixel 9 Pro Fold の外側（352×717）で、字が伸びたぶん 段が 41px につぶれ、
+   **品物の名前と値段が見えず、ずらしても出てこなかった**（高さ 717 は上の「700 以下」に入らない。机上と 8a は文字 100% なので出ない） */
+#shop.compact{height:min(62dvh,480px);gap:6px;padding-top:8px;}
+#shop.compact #shopTabs .pill{min-height:42px;}
+#shop.compact #shopNote,#shop.compact #shopWearing .shopSec{display:none;}
+#shop.compact #shopWearing{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;min-height:36px;}
+#shop.compact #shopWearing .shopChip{flex:none;}
+#shop.compact #shopClose{padding:7px 12px;}
+#shop.compact .shopCard img,#shop.compact .shopThumbAlt{aspect-ratio:2/1;}
+#shop.compact #shopBuyBar{padding-top:6px;}
+#shop.compact #shopBuy{padding:9px 16px;}
+/* 横向き：ショップのあいだだけ 右の縦レールを 画面の高さいっぱい・幅 半分弱に広げる（左が 試着室）。
+   ⚠ レールの幅のままだと 段が 200px に押しこまれて 中身が画面の下へ はみ出し、画面ぜんたいが上へずれた（2026-09-30 の 914×411） */
+@media (orientation:landscape) and (max-height:520px){
+  #dock.shop-open{top:0;width:min(50vw,460px);}
+  #dock.shop-open #shop{
+    flex:1 1 auto;height:auto;max-height:none;margin:0;
+    border:2px solid var(--ink);border-radius:20px;padding:8px 10px;gap:6px;
+  }
+  #dock.shop-open #shopNote,#dock.shop-open #shopWearing .shopSec{display:none;}
+  #dock.shop-open #shopWearing{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;min-height:36px;}
+  #dock.shop-open .shopChip{flex:none;}
+  #dock.shop-open .shopCard img,#dock.shop-open .shopThumbAlt{aspect-ratio:2/1;}
+  /* 上の帯（名前・💰）は 右の段の左で終える（段の下に 財布が隠れた） */
+  #app.shop-on #topBar{right:calc(min(50vw,460px) + 4px);}
+}
+/* ⚠⚠ **回転ヒントはスタジオ中だけ畳む。** あれは上から **133px** 食っていて（実測）、
+   そのぶん猫の場所が消える。⚠ 言葉は消さない——スタジオの題の下に1行で入れてある（#studioNote）。
+   ⚠⚠ **畳むのは CSS ではなく `refreshLookUi`**（src/ui/trimUi.ts）。
+      あそこが `style.display` を**直に**書いているので、ここに規則を足しても
+      **インラインに負けて効かない**（一度そう書いて、実測 133px のまま変わらなかった）。
+      持ち主は1つにする。 */
+#studioHead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex:none;}
+#studioTitle{font-weight:900;font-size:15px;color:var(--ink);padding-left:4px;line-height:1.3;}
+#studioNote{font-size:10px;font-weight:800;color:#6B7A86;padding-left:4px;line-height:1.3;}
+#studioClose{flex:none;font-size:13px;padding:9px 14px;}
+/* タブ。⚠ 6枚を横に並べる。狭い画面では折り返す（横スクロールにすると、
+   隠れているタブに気づけない——「画面に出ていない機能は存在しない」） */
+#studioTabs{display:flex;flex-wrap:wrap;gap:5px;flex:none;}
+#studioTabs .pill{flex:1 0 auto;min-height:34px;font-size:12px;padding:6px 8px;}
+/* さわったタブに印。どこを触ったか分からなくなるのを防ぐ */
+#studioTabs .pill.touched::after{content:'●';font-size:8px;margin-left:4px;color:var(--collar);}
+#studioTabs .pill.on.touched::after{color:#FFD9C6;}
+/* ⚠ あふれていることが見て分かるように、引き出しと同じ「巻物の影」を使う */
+#studioBody{
+  overflow-y:auto;overscroll-behavior:contain;min-height:0;padding:1px 0 2px;
+  background:
+    linear-gradient(var(--cream) 40%, rgba(255,249,239,0)) top / 100% 14px no-repeat local,
+    linear-gradient(rgba(255,249,239,0), var(--cream) 60%) bottom / 100% 14px no-repeat local,
+    radial-gradient(farthest-side at 50% 0, rgba(43,58,70,.26), rgba(43,58,70,0)) top / 100% 9px no-repeat scroll,
+    radial-gradient(farthest-side at 50% 100%, rgba(43,58,70,.26), rgba(43,58,70,0)) bottom / 100% 9px no-repeat scroll;
+}
+.studioRow{margin:2px 0 6px;}
+.studioLabel{display:flex;justify-content:space-between;gap:8px;font-size:13px;font-weight:800;color:var(--ink);padding:0 4px 1px;}
+.studioLabel span:last-child{font-variant-numeric:tabular-nums;opacity:.7;}
+/* ⚠ 比の縛りで端が狭まっている行は、そう見せる（黙って止まると壊れて見える。
+   縛りの中身は catStudio.ts の limitOf） */
+.studioRow.capped .studioLabel span:last-child::after{content:' ここまで';font-size:10px;color:var(--collar);}
+/* ⚠ **効かないつまみは 薄く＋理由**（「🐾 おねがい」のフリスビーと同じ型）。
+   無地（しろ・くろ）では しまのつまみは体に 1画素も届かない（src/cat/catDog.ts の catPatterned）。
+   ⚠ **隠さない**——消すと「さっきまであったのに」になる。 */
+.studioRow.dim{opacity:.45;}
+.studioRow.dim input[type=range]{cursor:not-allowed;}
+/* ⚠⚠ **スライダーは大きく**（設計 4章：高さ44px・つまみ32px）。
+   要望は「お年寄りにも分かりやすく」なので、小さくして詰めるのは向きが逆。 */
+.studioRow input[type=range]{
+  -webkit-appearance:none;appearance:none;width:100%;height:44px;background:transparent;margin:0;display:block;
+  /* ⚠⚠ **たての動きはスクロールへ渡す**（実機で言われた「一覧を上下にスクロールしようとして
+     少し触れただけで値が動く」）。`pan-y` ＝「たてのパンはブラウザがやる／それ以外はこの要素」。
+     ⚠ 既定の `auto` だと、たてに 120px スワイプしただけで **値が 1目盛り動いた**（実測）。
+     ⚠ これだけでは足りない（下の ⚠⚠）ので、掴む向きの見きわめは JS でもやっている。 */
+  touch-action:pan-y;
+}
+.studioRow input[type=range]::-webkit-slider-runnable-track{
+  height:12px;border-radius:6px;background:#EADFCF;border:2px solid var(--ink);
+}
+.studioRow input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:32px;height:32px;border-radius:50%;
+  background:var(--collar);border:3px solid var(--ink);box-shadow:0 2px 0 rgba(43,58,70,.28);
+  margin-top:-12px;cursor:pointer;
+}
+.studioRow input[type=range]::-moz-range-track{height:12px;border-radius:6px;background:#EADFCF;border:2px solid var(--ink);}
+.studioRow input[type=range]::-moz-range-thumb{width:32px;height:32px;border-radius:50%;background:var(--collar);border:3px solid var(--ink);cursor:pointer;}
+.studioChips{display:flex;flex-wrap:wrap;gap:5px;padding:2px 2px 4px;}
+.studioChips .pill{flex:1 0 auto;min-height:40px;font-size:12px;}
+/* 目の色は、飾りの13px丸ではなく**丸そのものを押す**。指で狙える42pxを保つ。 */
+.studioIris{
+  appearance:none;width:42px;height:42px;flex:0 0 42px;padding:0;border:3px solid #fff;border-radius:50%;
+  background:var(--swatch);cursor:pointer;box-shadow:0 0 0 2px var(--ink),0 3px 0 rgba(43,58,70,.28);
+}
+.studioIris.on{box-shadow:0 0 0 3px var(--collar),0 0 0 5px var(--ink),0 4px 0 rgba(43,58,70,.28);}
+.studioIris:active{transform:translateY(2px);box-shadow:0 0 0 2px var(--ink),0 1px 0 rgba(43,58,70,.28);}
+.studioIris:focus-visible{outline:3px solid var(--collar);outline-offset:5px;}
+.studioIrisChoices{flex-wrap:nowrap;justify-content:space-between;gap:4px;}
+.studioIrisChoice{display:flex;flex:1 1 48px;min-width:44px;flex-direction:column;align-items:center;gap:3px;}
+.studioIrisName{font-size:10px;line-height:1.1;white-space:nowrap;color:var(--ink);}
+.studioIrisLegacy{font-size:11px;color:#795548;padding:0 3px 3px;}
+.studioIrisLegacy[hidden]{display:none;}
+.studioIrisMode{display:flex;justify-content:flex-end;gap:5px;padding:0 2px 4px;}
+.studioIrisMode[hidden]{display:none;}
+.studioIrisMode .pill{min-height:38px;font-size:12px;}
+.studioTools{display:flex;gap:6px;padding:6px 2px 2px;}
+.studioTools .pill{flex:1;min-height:40px;font-size:12px;}
+/* 家具の配置は、普段の画面と分けた編集画面にする。
+   背景部分は指を通し、案内とボタンだけがタップを受け取る。 */
+#app.furn-placing #topBar,#app.furn-placing #dock,#app.furn-placing #hint,#app.furn-placing #trimRotateHint{
+  opacity:0;visibility:hidden;pointer-events:none;
+}
+#furnPlaceUi{position:absolute;inset:0;z-index:22;display:none;pointer-events:none;}
+#furnPlaceUi.open{display:block;}
+#furnPlaceGuide{position:absolute;top:max(12px,env(safe-area-inset-top));left:12px;right:12px;margin:auto;
+  max-width:430px;background:rgba(43,58,70,.94);color:#fff;border:2px solid rgba(255,255,255,.55);
+  border-radius:20px;padding:11px 14px;text-align:center;box-shadow:0 5px 18px rgba(0,0,0,.28);}
+#furnPlaceTitle{font-size:16px;font-weight:900;}
+#furnPlaceHelp{font-size:10px;font-weight:700;line-height:1.6;color:#d6e2e9;margin-top:4px;}
+#furnPlaceToolbar{position:absolute;left:10px;right:10px;bottom:max(10px,env(safe-area-inset-bottom));margin:auto;
+  max-width:480px;display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px;
+  background:rgba(255,249,239,.94);border:2px solid var(--ink);border-radius:20px;
+  box-shadow:0 5px 20px rgba(0,0,0,.3);pointer-events:auto;backdrop-filter:blur(4px);}
+#furnPlaceStatus{font-size:11px;font-weight:800;line-height:1.55;color:var(--ink);text-align:center;min-height:34px;}
+.furnLegend{display:flex;justify-content:center;gap:11px;flex-wrap:wrap;font-size:9px;font-weight:800;color:#586b78;}
+.furnDot{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:3px;vertical-align:-1px;}
+#furnRemoveBtn{background:#fff0f1;color:#a52d3b;border-color:#d84d5d;box-shadow:0 3px 0 rgba(168,45,59,.28);}
+/* 写真から「うちの子」を作る画面。上半分は3Dのプレビューを見せ、
+   下のカードだけで写真・形・色を調整する。普段のUIは誤タップ防止のため隠す。 */
+#app.photo-dog-editing #topBar,#app.photo-dog-editing #dock,#app.photo-dog-editing #hint,#app.photo-dog-editing #trimRotateHint{
+  opacity:0;visibility:hidden;pointer-events:none;
+}
+#photoDogOverlay{position:absolute;inset:0;z-index:31;display:none;pointer-events:none;
+  background:linear-gradient(to bottom,rgba(20,28,34,.14) 0 34%,rgba(20,28,34,.72) 48%,rgba(20,28,34,.97) 68%);}
+#photoDogOverlay.open{display:block;}
+#photoDogGuide{position:absolute;top:max(12px,env(safe-area-inset-top));left:12px;right:12px;margin:auto;max-width:430px;
+  color:#fff;background:rgba(43,58,70,.9);border:2px solid rgba(255,255,255,.55);border-radius:18px;
+  padding:9px 13px;text-align:center;font-size:11px;font-weight:800;line-height:1.6;box-shadow:0 4px 16px rgba(0,0,0,.28);pointer-events:auto;}
+#photoDogCard{position:absolute;left:8px;right:8px;bottom:max(8px,env(safe-area-inset-bottom));margin:auto;max-width:520px;
+  max-height:64dvh;overflow-y:auto;background:rgba(255,249,239,.97);border:2px solid var(--ink);border-radius:22px;
+  padding:12px;box-shadow:0 8px 28px rgba(0,0,0,.38);color:var(--ink);pointer-events:auto;}
+.photoDogHeading{font-size:16px;font-weight:900;text-align:center;}
+.photoDogNote{font-size:10px;font-weight:700;line-height:1.65;text-align:center;color:#657987;margin-top:5px;}
+#photoDogCanvasWrap{position:relative;width:100%;margin:9px auto 7px;display:none;justify-content:center;}
+#photoDogCanvas{display:block;max-width:100%;max-height:29dvh;border-radius:14px;touch-action:none;background:#dfe6ea;box-shadow:0 2px 8px rgba(0,0,0,.18);}
+#photoDogCropNote{display:none;margin:7px auto 2px;max-width:430px;padding:7px 9px;border-radius:11px;
+  background:#eef6f7;color:#405965;font-size:10px;font-weight:800;line-height:1.55;text-align:center;}
+#photoDogCropNote.warn{background:#fff0e8;color:#8d4428;}
+#photoDogColorRow{display:none;justify-content:center;align-items:center;gap:9px;margin:8px 0;}
+.photoDogColor{width:34px;height:34px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px var(--ink);}
+.photoDogChoiceTitle{font-size:11px;font-weight:900;margin:10px 0 5px;text-align:center;}
+.photoDogChoices{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;}
+.photoDogChoices .pill{font-size:10px;padding:6px 9px;box-shadow:0 2px 0 rgba(43,58,70,.25);}
+.photoDogChoices .pill.on{background:var(--ink);color:#fff;}
+#photoDogResult{display:none;}
+#photoDogBreedReview{display:none;flex-direction:row;gap:7px;align-items:center;justify-content:center;margin:0 0 7px;padding:6px 9px;
+  border:2px solid rgba(43,58,70,.22);border-radius:16px;background:rgba(255,249,239,.97);pointer-events:auto;}
+#photoDogBreedResult{font-size:13px;font-weight:900;color:var(--ink);}
+#photoDogBreedReview .photoDogBreedHint,#photoDogBreedReview .photoDogChoices{display:none;}
+#photoDogBreedReview .photoDogBreedHint{font-size:10px;font-weight:800;color:#627581;text-align:center;line-height:1.45;}
+#photoDogBreedReview .photoDogChoices{gap:5px;}
+#photoDogBreedReview [data-photo-breed]{min-height:36px;padding:6px 9px;font-size:10px;}
+#photoDogBreedChange{min-height:32px;padding:5px 10px;font-size:10px;box-shadow:none;}
+#photoDogBreedReview.choices-open{flex-direction:column;padding:8px 9px;}
+#photoDogBreedReview.choices-open .photoDogBreedHint,#photoDogBreedReview.choices-open .photoDogChoices{display:flex;}
+#photoDogBreedReview.uncertain{border-color:#d86d3d;background:#fff2e8;}
+#photoDogBreedReview.uncertain #photoDogBreedResult{color:#9a3f21;}
+#photoDogPrivacy{font-size:9px;font-weight:700;color:#71838f;text-align:center;line-height:1.5;margin:8px 0;}
+@media (orientation:landscape) and (max-height:520px){
+  #photoDogGuide{left:8px;right:auto;max-width:290px;text-align:left;}
+  #photoDogCard{left:auto;right:max(8px,env(safe-area-inset-right));bottom:max(8px,env(safe-area-inset-bottom));width:min(54vw,520px);max-height:94dvh;}
+  #photoDogCanvas{max-height:35dvh;}
+}
+/* 写真から作る操作は、写真を選ぶ→自動解析→確認だけ。犬が見える範囲を広く保つ。 */
+#photoDogOverlay{background:linear-gradient(to bottom,rgba(20,28,34,.03) 0 48%,rgba(20,28,34,.13) 62%,rgba(20,28,34,.68) 82%,rgba(20,28,34,.84) 100%);}
+#photoDogGuide{top:max(10px,env(safe-area-inset-top));max-width:390px;padding:8px 12px;border-width:1px;border-radius:16px;font-size:12px;font-weight:900;line-height:1.5;}
+#photoDogCard{left:9px;right:9px;bottom:max(8px,env(safe-area-inset-bottom));max-width:480px;max-height:48dvh;padding:13px;border-radius:24px;}
+.photoDogHeading{font-size:18px;}
+.photoDogNote{font-size:11px;}
+#photoDogPick{display:flex;gap:9px;margin-top:12px;}
+#photoDogPick .pill{flex:1;min-height:54px;font-size:13px;}
+#photoDogLoading{display:none;flex-direction:column;align-items:center;gap:10px;padding:12px 4px 5px;text-align:center;font-size:13px;font-weight:900;}
+.photoDogSpinner{width:34px;height:34px;border:5px solid #d9e2e6;border-top-color:var(--collar);border-radius:50%;animation:photoDogSpin .85s linear infinite;}
+@keyframes photoDogSpin{to{transform:rotate(360deg)}}
+#photoDogCanvasWrap{width:82px;height:82px;margin:8px auto;align-items:center;border-radius:18px;overflow:hidden;background:#dfe6ea;box-shadow:0 2px 8px rgba(0,0,0,.18);}
+#photoDogCanvas{max-width:100%;max-height:100%;border-radius:0;box-shadow:none;}
+#photoDogColorRow{gap:10px;margin:8px 0;}
+.photoDogColor{width:32px;height:32px;}
+#photoDogResult .row .pill{min-height:52px;font-size:12px;}
+#photoDogApply{flex:1.35;}
+#photoDogRecrop{flex:1;}
+#photoDogAdjust{display:none;margin-top:8px;padding:7px 8px 10px;border-radius:16px;background:#eef3f4;}
+#photoDogAdjustBtn{display:block;margin:8px auto 0;font-size:10px;box-shadow:none;}
+#photoDogPrivacy{margin:7px 0;}
+#photoDogCancelRow{margin-top:8px!important;}
+#photoDogCancel{min-height:42px;}
+@media (orientation:landscape) and (max-height:520px){
+  #photoDogGuide{left:8px;right:auto;max-width:270px;text-align:left;}
+  #photoDogCard{left:auto;right:max(8px,env(safe-area-inset-right));width:min(48vw,480px);max-height:91dvh;}
+}
+/* 写真確認中も3Dの犬を隠さない。結果画面は下端の2ボタンだけにする。 */
+#photoDogOverlay{background:transparent!important;}
+#photoDogGuide{display:none!important;}
+#photoDogCard{
+  left:12px!important;right:12px!important;bottom:max(10px,env(safe-area-inset-bottom))!important;
+  width:auto!important;max-width:430px!important;max-height:none!important;overflow:hidden!important;
+  padding:12px!important;border-radius:20px!important;background:rgba(255,249,239,.96)!important;
+}
+#photoDogIntro,#photoDogCanvasWrap{display:none!important;}
+#photoDogOverlay[data-photo-stage="pick"] #photoDogCard,
+#photoDogOverlay[data-photo-stage="error"] #photoDogCard{max-height:none!important;}
+#photoDogOverlay[data-photo-stage="loading"] #photoDogCard{max-height:102px!important;padding:8px 12px!important;}
+#photoDogOverlay[data-photo-stage="loading"] #photoDogTitle,
+#photoDogOverlay[data-photo-stage="loading"] #photoDogCancelRow{display:none!important;}
+#photoDogOverlay[data-photo-stage="result"] #photoDogCard{
+  height:auto!important;max-height:216px!important;padding:7px!important;border:0!important;
+  border-radius:18px!important;background:rgba(255,249,239,.96)!important;box-shadow:0 5px 18px rgba(0,0,0,.24)!important;pointer-events:none!important;
+}
+#photoDogOverlay[data-photo-stage="result"] #photoDogTitle,
+#photoDogOverlay[data-photo-stage="result"] #photoDogResultNote,
+#photoDogOverlay[data-photo-stage="result"] #photoDogPrivacy,
+#photoDogOverlay[data-photo-stage="result"] #photoDogColorRow,
+#photoDogOverlay[data-photo-stage="result"] #photoDogCancelRow{display:none!important;}
+#photoDogOverlay[data-photo-stage="result"] #photoDogResult{display:block!important;}
+#photoDogOverlay[data-photo-stage="result"] #photoDogBreedReview{display:flex!important;}
+#photoDogLookReview{display:none;flex-direction:column;gap:4px;margin:0 0 5px;padding:4px 8px;border-radius:14px;background:#fff8f0;border:2px solid rgba(0,0,0,.08);}
+/* 出し入れは dogPhotoWizard.ts が決める（犬種を選ぶ前は出さない） */
+.photoDogLookRow{display:flex;gap:5px;align-items:center;justify-content:center;flex-wrap:wrap;}
+.photoDogLookLabel{font-size:10px;font-weight:800;color:#627581;min-width:1.4em;}
+#photoDogLookReview .pill.mini{min-height:29px;padding:4px 8px;font-size:10px;}
+#photoDogOverlay[data-photo-stage="result"] #photoDogResult>.row{
+  display:flex!important;gap:8px;pointer-events:auto!important;
+}
+#photoDogOverlay[data-photo-stage="result"] #photoDogResult>.row .pill{
+  min-height:58px!important;font-size:13px!important;border-radius:18px!important;
+}
+#photoDogPick{margin-top:8px!important;}
+#photoDogPick .pill{min-height:48px!important;}
+#photoDogLoading{padding:5px 2px!important;gap:5px!important;}
+#photoDogLoading .photoDogNote{display:none!important;}
+.photoDogSpinner{width:27px!important;height:27px!important;border-width:4px!important;}
+@media (orientation:landscape) and (max-height:520px){
+  #photoDogCard{left:auto!important;right:max(10px,env(safe-area-inset-right))!important;width:min(360px,45vw)!important;}
+}
+@media (orientation:landscape) and (max-height:520px){
+  #furnPlaceGuide{left:8px;right:auto;top:max(8px,env(safe-area-inset-top));max-width:285px;text-align:left;}
+  #furnPlaceToolbar{left:auto;right:max(8px,env(safe-area-inset-right));bottom:max(8px,env(safe-area-inset-bottom));max-width:390px;gap:5px;padding:8px;}
+  #furnPlaceStatus{min-height:0;font-size:10px;}
+}
+@media (orientation:landscape) and (max-height:520px){
+  .pill{font-size:11px;padding:7px 10px;}
+  .pill.hero{font-size:12px;padding:8px 13px;}
+  #dock{gap:5px;}
+  #dogName{width:110px;font-size:12px;}
+}
+.float{position:absolute;z-index:9;font-weight:900;pointer-events:none;animation:rise 1.1s ease-out forwards;text-shadow:0 2px 0 rgba(255,255,255,.6);}
+@keyframes rise{0%{opacity:0;transform:translate(-50%,0) scale(.5);}15%{opacity:1;transform:translate(-50%,-14px) scale(1.15);}100%{opacity:0;transform:translate(-50%,-90px) scale(1);}}
+#shareModal{position:absolute;inset:0;background:rgba(43,58,70,.65);z-index:30;display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;padding:20px;}
+#shareModal.open{display:flex;}
+#shareCard{max-width:100%;max-height:70dvh;border-radius:18px;box-shadow:0 12px 40px rgba(0,0,0,.4);object-fit:contain;}
+/* 下からせり出す確認シート。わんこを隠さないよう画面の下だけを使う */
+#sheet{position:absolute;left:0;right:0;bottom:0;z-index:28;display:none;flex-direction:column;gap:10px;
+  background:rgba(43,58,70,.94);border-radius:22px 22px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));
+  box-shadow:0 -8px 30px rgba(0,0,0,.35);}
+#sheet.open{display:flex;}
+#sheetTitle{color:#fff;font-weight:900;font-size:16px;text-align:center;}
+#sheetBody{color:#C6D4DE;font-weight:700;font-size:12px;text-align:center;line-height:1.8;}
+/* 待ち時間の表示。わんこを隠さないよう、画面の下寄りに小さく出す */
+#work{position:absolute;left:50%;bottom:96px;transform:translateX(-50%);z-index:27;display:none;
+  flex-direction:column;align-items:center;gap:7px;min-width:250px;
+  background:rgba(43,58,70,.9);border-radius:18px;padding:12px 18px 14px;
+  box-shadow:0 4px 18px rgba(0,0,0,.3);}
+#work.open{display:flex;}
+#workTitle{color:#fff;font-weight:800;font-size:13px;white-space:nowrap;}
+#workBarOuter{width:100%;height:7px;border-radius:999px;background:rgba(255,255,255,.18);overflow:hidden;}
+#workBar{height:100%;width:0;border-radius:999px;background:var(--collar);transition:width .25s;}
+#workNote{color:#9fb3c0;font-weight:700;font-size:10px;white-space:nowrap;}
+/* プロフィールカード（B トレカ。src/ui/profileCardUi.ts・docs/dogrun-profile-card-design.md）。
+   ⚠ ともだち帳（z-index 26）の上に出す（帳面のカードを大きく見る）。案内（29）・シート（28）より下 */
+#cardOverlay{position:absolute;inset:0;z-index:27;display:none;background:rgba(43,58,70,.38);}
+#cardWrap{position:absolute;left:0;top:0;display:flex;flex-direction:column;align-items:center;gap:14px;transform-origin:0 0;}
+.pcard{--f:#FFB34D;width:272px;background:var(--f);border:3px solid var(--ink);border-radius:20px;padding:9px;box-shadow:0 6px 0 rgba(43,58,70,.3);color:var(--ink);text-align:left;}
+.pcard .pcInner{background:var(--cream);border:2px solid var(--ink);border-radius:14px;overflow:hidden;}
+.pcard .pcBand{display:flex;justify-content:space-between;align-items:baseline;gap:8px;background:var(--ink);color:#fff;padding:7px 12px;}
+.pcard .pcBand b{font-weight:900;font-size:22px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pcard .pcBand span{font-weight:800;font-size:12.5px;opacity:.85;flex:none;}
+.pcard .pcPic{height:222px;position:relative;overflow:hidden;background:radial-gradient(circle at 50% 42%,#fff 0,#fbe7c9 70%);}
+.pcard .pcPic img{position:absolute;left:5%;top:6%;width:90%;height:88%;object-fit:contain;object-position:50% 55%;}
+.pcard .pcWait{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:40px;opacity:.3;}
+.pcard .pcSay{margin:10px 10px 6px;padding:9px 10px;background:#fff;border:2px solid var(--ink);border-radius:12px;font-weight:800;font-size:14px;line-height:1.35;text-align:center;overflow-wrap:anywhere;}
+.pcard .pcSay.empty{color:#93a6b3;}
+.pcard textarea.pcSay{display:block;width:calc(100% - 20px);font-family:inherit;color:var(--ink);outline:none;resize:none;text-align:left;}
+.pcard textarea.pcSay:focus{border-color:var(--collar);}
+/* ひとことの柵（src/net/protocol.ts の sayProblem）に かかっている：欄を赤く・わけは下の字に（src/ui/profileCardUi.ts の checkOwn） */
+.pcard textarea.pcSay.bad{border-color:#d9480f;background:#fff4ef;}
+/* ブロックの丸（ともだちの子のカードの絵の右上。src/ui/profileCardUi.ts の CardBlock）。⚠ ボタンの段に足さない（320×568 で1行に入らない） */
+.pcard .pcBlock{position:absolute;right:6px;top:6px;width:36px;height:36px;border-radius:50%;border:2px solid var(--ink);
+  background:rgba(255,255,255,.88);font-size:16px;line-height:1;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2;}
+#cardBtns .pill.danger{background:#d9480f;border-color:#a8360b;color:#fff;box-shadow:0 3px 0 #a8360b;}
+.pcard .pcFoot{font-weight:800;font-size:11px;opacity:.65;text-align:right;padding:0 12px 9px;}
+#cardFace .pcFoot{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pcard .pcFoot.note{opacity:1;color:var(--collar);}
+.pcard .pcStamp{position:absolute;left:8px;top:8px;background:var(--collar);color:#fff;border:2px solid var(--ink);border-radius:999px;font-weight:900;font-size:13px;padding:4px 10px;transform:rotate(-8deg);box-shadow:0 2px 0 rgba(43,58,70,.3);}
+.pcard .pcStamp.pop{animation:pcPop .45s ease-out;}
+@keyframes pcPop{0%{transform:rotate(-8deg) scale(.2);opacity:0;}70%{transform:rotate(-8deg) scale(1.15);opacity:1;}100%{transform:rotate(-8deg) scale(1);}}
+#cardBtns{display:flex;gap:10px;justify-content:center;}
+#cardBtns .pill{font-size:15px;padding:11px 18px;white-space:nowrap;}
+#cardBtns .pill:disabled{opacity:.8;cursor:default;}
+/* ともだち帳の「カード」のタブ（小さいトレカ）。⚠ 暗い帳面の上 */
+#friendTabs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
+.ftab{border:2px solid rgba(255,255,255,.45);background:transparent;color:#fff;font-family:inherit;font-weight:800;font-size:12px;padding:7px 12px;border-radius:999px;cursor:pointer;}
+.ftab.on{background:var(--cream);color:var(--ink);border-color:var(--cream);}
+#cardGrid{display:none;grid-template-columns:repeat(auto-fill,minmax(136px,1fr));gap:12px;width:100%;max-width:460px;overflow-y:auto;flex:1;padding:4px;align-content:start;}
+.cardSection{grid-column:1/-1;color:#93a6b3;font-weight:800;font-size:12px;padding:4px 2px 0;}
+.pcard.small{width:auto;min-width:0;padding:6px;border-radius:16px;box-shadow:0 4px 0 rgba(0,0,0,.3);cursor:pointer;}
+.pcard.small .pcInner{border-radius:11px;}
+.pcard.small .pcBand{padding:4px 8px;gap:6px;}
+.pcard.small .pcBand b{font-size:15px;}
+.pcard.small .pcBand span{font-size:10px;}
+.pcard.small .pcPic{height:auto;aspect-ratio:1/0.8;}
+.pcard.small .pcWait{font-size:28px;}
+.pcard.small .pcSay{margin:6px 6px 4px;padding:5px 6px;font-size:11px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.pcard.small .pcFoot{font-size:10px;padding:0 8px 6px;}
+/* オンラインの部屋（src/ui/dogrunNetUi.ts）。⚠ ともだち帳（26）と同じ高さの層。カード（27）とは同時に開かない */
+#netPill{pointer-events:auto;font-size:13px;white-space:nowrap;}
+/* ドッグランの「🎾 とってこい」（src/ui/dogrunFetchUi.ts）。👥 の下。遊んでいるあいだは濃く（おしまい） */
+#fetchPill{pointer-events:auto;font-size:13px;white-space:nowrap;}
+#fetchPill.on{background:var(--ink);color:#fff;}
+/* 手元のボールの真上の案内（はじめの3回だけ）。⚠ 指を通す（スワイプの邪魔をしない） */
+#fetchHint{position:absolute;z-index:21;transform:translate(-50%,-100%);display:none;pointer-events:none;
+  background:rgba(43,58,70,.82);color:#fff;border-radius:16px;padding:6px 13px;font-weight:800;font-size:13px;white-space:nowrap;}
+#fetchHint.on{display:block;}
+/* ⚠ ドッグランでは右上に札（👥）が出るので、知らせ（#toast）は その下へ（散歩の帯と同じ よけかた）。
+   top:60px のままだと「ピンチで よったり…」が札の「👥」を隠した（tools/dogrunNetTest.mjs の [1] で撮って見つけた） */
+#app.dogrun #toast{top:98px;}
+/* ともだちの子の名札（src/ui/netTags.ts）。頭の上。⚠ 引き出し・ドック（10）より下、場面より上。押せない */
+#netTags{position:absolute;inset:0;z-index:6;pointer-events:none;overflow:hidden;}
+.netTag{position:absolute;left:0;top:0;display:flex;align-items:center;gap:4px;background:var(--cream);border:2px solid var(--ink);border-radius:999px;
+  padding:2px 9px 2px 5px;font-size:12px;font-weight:800;color:var(--ink);white-space:nowrap;box-shadow:0 2px 0 rgba(43,58,70,.25);will-change:transform;}
+.netTag i{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--ink);flex:none;}
+/* 「〇〇が カードを こうかんしたいって ［みる］」（src/ui/netCardAskUi.ts。2026-09-28 の利用者：案B）。
+   ⚠ カード・部屋の段（27）より上（何を開いていても見える）。出ているあいだ、知らせ（#toast）は その下へ */
+/* ⚠ まんなかへは left:50% で寄せない——折り返す幅が画面の半分しか無くなり、320×568 で字が切れた（測って気づいた）。左右 12px をあけて fit-content */
+#netAsk{position:absolute;left:12px;right:12px;margin:0 auto;width:fit-content;max-width:440px;top:98px;z-index:28;display:none;align-items:center;gap:10px;
+  background:var(--ink);color:#fff;font-weight:800;font-size:13px;padding:7px 7px 7px 14px;border-radius:16px;box-shadow:0 4px 10px rgba(0,0,0,.25);}
+/* ⚠ 1行に詰めない——390×844 で「うちの子が カードを こうかんした…」と大事な所が切れた（撮って気づいた）。空白で2行に折る */
+#netAskText{white-space:normal;word-break:keep-all;line-height:1.35;min-width:0;}
+#netAsk .pill.hero{flex:none;font-size:14px;padding:10px 18px;border-color:#fff;box-shadow:none;}
+#app.netAsk #toast{top:156px;}
+#netPill.on{background:var(--ink);color:#fff;}
+#netSheet{position:absolute;inset:0;z-index:27;display:none;background:rgba(43,58,70,.35);}
+#netSheetBody{position:absolute;left:0;right:0;bottom:0;max-width:520px;margin:0 auto;max-height:calc(100% - 16px);overflow-y:auto;
+  background:var(--cream);border-top:2px solid var(--ink);border-radius:22px 22px 0 0;padding:16px 16px calc(20px + env(safe-area-inset-bottom));
+  box-shadow:0 -4px 14px rgba(0,0,0,.18);color:var(--ink);}
+.netTitle{font-size:16px;font-weight:900;margin-bottom:6px;}
+.netNote{font-size:12px;font-weight:700;opacity:.75;line-height:1.6;margin-bottom:12px;}
+.netBig{display:flex;flex-direction:column;gap:10px;}
+.netBig .pill{font-size:16px;padding:14px 16px;border-radius:18px;text-align:left;}
+.netCode{font-size:40px;font-weight:900;letter-spacing:6px;text-align:center;margin:2px 0 10px;}
+.netMem{display:flex;flex-direction:column;gap:6px;margin:10px 0 12px;}
+.netMem>div{display:flex;align-items:center;gap:8px;font-weight:800;font-size:14px;background:#fff;border:2px solid var(--ink);border-radius:12px;padding:7px 10px;}
+.netMem>div.empty{opacity:.55;border-style:dashed;font-size:12px;}
+.netMem .dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--ink);flex:none;}
+.netMem .netYou{margin-left:auto;font-size:11px;opacity:.6;}
+.netRow{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.netRow .pill{font-size:14px;padding:10px 16px;}
+.netRow .pill.hero{font-size:15px;}
+.netRow .pill:disabled{opacity:.45;}
+#netCodeInput{display:block;margin:6px auto 8px;width:min(260px,100%);font-family:inherit;font-size:34px;font-weight:900;letter-spacing:10px;text-align:center;
+  border:2px solid var(--ink);border-radius:14px;padding:8px 4px;background:#fff;color:var(--ink);outline:none;}
+#netCodeInput:focus{border-color:var(--collar);}
+.netErr{color:#c94a2e;font-weight:800;font-size:13px;text-align:center;min-height:19px;margin:2px 0 10px;}
+/* ⚠ 折り返す（前は white-space:nowrap の1行で、320 幅や文字「大」で 長い知らせの両端が画面の外へ出た。docs/audit-2026-10-11.md §4.6）。
+   width:max-content＋max-width で「短い文は1行の幅・長い文は画面の幅−32px で折る」（left:50% のままだと幅が画面の半分で折れる）。
+   折るのは空白のところだけ（keep-all。入口の段と同じ。空白の無い長い語だけは途中で折る＝overflow-wrap） */
+#toast{position:absolute;left:50%;top:60px;transform:translateX(-50%);background:var(--ink);color:#fff;font-weight:800;font-size:13px;padding:10px 16px;border-radius:14px;opacity:0;transition:opacity .25s;z-index:40;pointer-events:none;width:max-content;max-width:calc(100% - 32px);text-align:center;line-height:1.35;word-break:keep-all;overflow-wrap:anywhere;}
+/* 初回だけの案内（src/app/tutorial.ts）。
+   ・案内の層そのものは指を通さない。押せるのは暗幕と吹き出しだけ
+   ・暗幕を4枚に分けているのは、明るくしたところ「だけ」を押せるようにするため。
+     1枚の穴あきにすると、穴の中も塞がってしまう */
+#tut{position:absolute;inset:0;z-index:29;display:none;pointer-events:none;}
+#tut.open{display:block;}
+.tutDim{position:absolute;background:rgba(20,28,34,.62);pointer-events:auto;transition:background .3s;}
+/* 演出を見せたい画面だけ薄くする */
+#tut.soft .tutDim{background:rgba(20,28,34,.2);}
+#tutRing{position:absolute;display:none;border-radius:18px;box-shadow:0 0 0 3px var(--collar),0 0 16px rgba(255,122,60,.55);}
+#tutBubble{position:absolute;left:10px;right:10px;background:var(--cream);border:2px solid var(--ink);border-radius:20px;
+  padding:14px 16px;box-shadow:0 4px 0 rgba(43,58,70,.3);pointer-events:auto;}
+/* 下に置くときは画面の端まで伸ばして、下のボタンを隠しきる。
+   中途半端に浮かせると、暗幕ごしのボタンが吹き出しの下からのぞく */
+#tutBubble.low{left:0;right:0;bottom:0;border-radius:22px 22px 0 0;border-width:2px 0 0;
+  padding-bottom:calc(16px + env(safe-area-inset-bottom));}
+#tutText{font-weight:800;font-size:15px;color:var(--ink);line-height:1.7;}
+#tutNote{font-weight:700;font-size:11px;color:#6f8290;line-height:1.7;margin-top:5px;}
+#tutNote:empty{display:none;}
+#tutBtns{margin-top:11px;}
+#tutBtns:empty{display:none;}
+/* 一行そえるボタンは横いっぱいに。3つ横に並べると、そえた一行が読めない幅になる */
+#tutBtns .pill.wide{flex:0 0 100%;display:flex;flex-direction:column;gap:2px;align-items:center;padding:9px 12px;}
+#tutBtns .pill.wide span{font-size:10px;font-weight:700;opacity:.65;}
+#tutSkip{position:absolute;top:max(10px,env(safe-area-inset-top));right:max(10px,env(safe-area-inset-right));pointer-events:auto;}
+/* ひとつ前へ。押し間違えたときに戻れないと、とばすしかなくなる */
+#tutBack{position:absolute;top:max(10px,env(safe-area-inset-top));left:max(10px,env(safe-area-inset-left));pointer-events:auto;display:none;}
+#tutBack.on{display:inline-block;}
+@media (orientation:landscape) and (max-height:520px){
+  #tutText{font-size:13px;}
+  #tutBubble{padding:11px 14px;}
+}
+
+/* ---- 散歩中 ----
+   ⚠ 画面のまん中は空けておく。そこに犬とリードが居るので、
+   帯を置くと「一緒に歩いている」感じがそのまま消える。 */
+#strollUi{position:absolute;inset:0;z-index:22;display:none;pointer-events:none;}
+#strollUi.on{display:block;}
+/* 出発時の「○○は おるすばん」を、いまどこ／あと何分の帯に重ねない。 */
+#app.strolling #toast{top:92px;}
+#strollTop{
+  position:absolute;left:50%;transform:translateX(-50%);
+  top:calc(max(10px,env(safe-area-inset-top)) + 4px);
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  background:rgba(20,28,34,.62);border-radius:16px;padding:7px 14px 9px;
+  backdrop-filter:blur(3px);
+}
+#strollWhere{color:#fff;font-weight:800;font-size:12px;letter-spacing:.04em;}
+#strollBarOuter{width:min(58vw,240px);height:7px;border-radius:5px;background:rgba(255,255,255,.28);overflow:hidden;}
+#strollBar{height:100%;width:0;border-radius:5px;background:linear-gradient(90deg,#FFC46B,#FF7A3C);transition:width .25s linear;}
+#strollLeft{color:#cfe0ea;font-weight:800;font-size:10px;}
+#strollBottom{
+  position:absolute;left:0;right:0;
+  bottom:calc(max(10px,env(safe-area-inset-bottom)) + 6px);
+  display:flex;justify-content:center;align-items:center;gap:8px;pointer-events:auto;
+}
+/* ⚠ 下の段は3つ→4つになった。**縮ませないこと**——フリスビーで「おしまい」が
+   411px 幅の flex で縮んで**縦書きに潰れた**のと同じことが起きる。 */
+#strollBottom .pill{flex:none;white-space:nowrap;}
+/* ---- 分かれ道（src/app/strollFork.ts）----
+   ⚠ 画面のまん中は空ける。そこに犬とリードが居て、こちらを見ている。
+   ボタンは下の段のすぐ上に、横並びで。⚠ 高さ 44px 以上（急いで押すもの）。
+   ⚠ ボタンの数は決め打ちにしない（将来 3択にする）。横に入らなければ折り返す。 */
+#strollForkUi{
+  position:absolute;left:0;right:0;
+  bottom:calc(max(10px,env(safe-area-inset-bottom)) + 62px);
+  display:none;flex-wrap:wrap;justify-content:center;align-items:stretch;gap:8px;
+  padding:0 10px;pointer-events:auto;
+}
+#strollForkUi.on{display:flex;}
+#strollForkUi .pill{
+  flex:0 1 auto;min-height:46px;min-width:104px;max-width:46vw;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+  font-size:13px;padding:7px 12px;
+  background:var(--collar);color:#fff;border-color:#D45A1F;box-shadow:0 3px 0 #D45A1F;
+}
+#strollForkUi .pill small{font-size:9px;font-weight:700;opacity:.85;letter-spacing:.02em;}
+#strollAsk{
+  position:absolute;left:50%;transform:translateX(-50%);
+  bottom:calc(max(10px,env(safe-area-inset-bottom)) + 118px);
+  display:none;background:rgba(20,28,34,.62);border-radius:12px;padding:5px 12px;
+  color:#fff;font-weight:800;font-size:11px;backdrop-filter:blur(3px);
+}
+#strollAsk.on{display:block;}
+/* ---- 地図（src/ui/strollMap.ts）。無料のふつうの機能（課金アイテムにしない） ---- */
+/* ⚠ **散歩の画面（#strollUi, z-index 22）より下に敷く。** 上に載せると、
+   分かれ道のボタンが地図の裏に隠れて「押せないまま犬が決める」ことになる
+   （撮って気づいた）。地図は下に敷いて、ボタンと帯はその上に出す。 */
+#strollMap{position:absolute;inset:0;z-index:21;display:none;background:rgba(18,26,32,.92);}
+#strollMap.on{display:block;}
+/* ⚠ 画布の上下は ui/strollMap.ts が測って入れる（下の段と分かれ道のボタンを避ける） */
+#strollMapCanvas{position:absolute;left:50%;transform:translateX(-50%);}
+/* ⚠ いまどこ／あと何分の帯（#strollTop）とぶつからない高さに置く */
+#strollMapClose{
+  position:absolute;right:calc(max(10px,env(safe-area-inset-right)) + 6px);
+  top:calc(max(10px,env(safe-area-inset-top)) + 58px);
+}
+/* ⚠ 凡例は**画布のすぐ下**に置く（top は ui/strollMap.ts が測って入れる）。
+   画面の下端に貼ると、下の段のボタンと重なる。 */
+#strollMapLegend{
+  position:absolute;left:0;right:0;
+  text-align:center;color:#dfe8ee;font-size:10px;font-weight:700;line-height:1.6;
+}
+/* フリスビー遊びの画面（src/app/frisbee.ts）。
+   投げるのは画面ぜんたいのスワイプなので、置くのは上だけ——
+   下に置くと、円盤（画面の下の空中）とボタンが重なって投げにくい。 */
+#frisbeeUi{position:absolute;inset:0;z-index:22;display:none;pointer-events:none;}
+#frisbeeUi.on{display:block;}
+/* ⚠ 遊んでいるあいだは、うちの子の名前の段と起動ヒントを引っ込める。
+   名前の段は頭数ぶん縦に伸びるので、出したままだと下の案内に**重なる**
+   （3頭で重なった。撮って気づいた）。さいふは残す。 */
+/* ⚠ #dogBar は inline style で display:flex を持っている（中身を組み立てる側が書く）。
+   !important を付けないと勝てない。 */
+#app.frisbee #dogBar{display:none !important;}
+#app.frisbee #hint{display:none;}
+/* ⚠ **ごはん・おやつの直置き段は、もう無い**（設計書 12章。🐾 おねがいの引き出しへ入った）。
+   前はここで `#app.frisbee #dailyBar{display:none}` と隠していた——円盤は「画面の下の空中」に
+   置くので、ドックが高いぶんだけ上へ押し上げられて、320×568 で上限（READY_NDC_TOP = -0.2）に
+   張り付いていた。**段ごと無くなったので、隠す決まりも要らない**（ドックは 44px 低い）。
+   ⚠ 円盤の高さは `#dock` の矩形から毎回はかる（src/app/frisbee.ts の readyNdcY）。 */
+#frisbeeTop{
+  position:absolute;left:50%;transform:translateX(-50%);
+  /* ⚠ おしらせ（#toast、top:60px）と重ならない高さに置く。
+     重ねると、投げるたびに案内が読めなくなる */
+  top:calc(max(10px,env(safe-area-inset-top)) + 96px);
+  display:flex;align-items:center;gap:8px;
+  background:rgba(20,28,34,.62);border-radius:16px;padding:6px 8px 6px 14px;
+  backdrop-filter:blur(3px);pointer-events:auto;
+}
+#frisbeeHint{color:#fff;font-weight:800;font-size:12px;letter-spacing:.03em;white-space:nowrap;}
+#frisbeeScore{color:#FFC46B;font-weight:800;font-size:11px;white-space:nowrap;}
+/* ⚠ flex の中で縮ませない。実機（411px 幅）で押し潰されて、
+   「おしまい」が**縦書き**になった（端末の絵を撮って気づいた） */
+#frisbeeQuitBtn{font-size:11px;padding:6px 10px;white-space:nowrap;flex:none;}
+
+/* ---- 🔄 横向きは別の病気（設計書 docs/ui-reorg-design.md 11章）-------------
+   ⚠⚠ 縦が 411px しか無いところに段を積むと、**何も開いていなくても**犬が隠れる
+      （実機 Pixel 8a・820×383 で 58%）。縦画面と同じ「下に積む」形のままだと、
+      犬をよけさせようにも**よける先が上に無い**。
+   だから横向きだけ **ドックを右の縦レール**にして、引き出しは**その左どなりの
+   縦長パネル**にする。犬は左の空きへ——カメラの横ずらしは同じ仕組みが受け持つ
+   （app/animate.ts の applyViewStage は四方の取りぶんで測っている）。
+   ⚠ ここは**横向きだけ**。縦画面の段組みは 1つも変えていない。
+   ⚠ さんぽ中の UI（strollUi）とフリスビーは、この段組みに入れない（別もの）。 */
+@media (orientation:landscape) and (max-height:520px){
+  #dock{
+    left:auto;right:0;top:auto;bottom:0;
+    width:min(30vw,200px);align-items:stretch;
+    padding:8px max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) 8px;
+  }
+  /* タブは2列（6つを縦一列にすると、383px の端末で段が入りきらない） */
+  #mainBar{grid-template-columns:repeat(2,1fr);}
+  /* ⚠ 横では**タブの段を隠さない**。隠すのは縦画面の話（横は左に余地がある） */
+  #dock.drawer-open #mainBar{display:grid;}
+  /* 引き出しは、レールの左どなりの縦長パネル */
+  #drawer{
+    position:absolute;right:100%;bottom:0;top:auto;left:auto;
+    width:min(40vw,360px);max-height:calc(100dvh - 16px);
+    margin:0 8px 0 0;padding:10px 12px;
+    border:2px solid var(--ink);border-radius:20px;
+  }
+  /* ⚠ 横では「おねがい」も高くしない（もともと画面いっぱいまで使えるし、
+     縦の 54dvh を当てると**背が縮む**）。⚠ 縦の決まりを打ち消すために、ここで書き直す */
+  #dock.drawer-tall #drawer{max-height:calc(100dvh - 16px);}
+  #drawerBody .panel.open,
+  #drawerBody .panel.col .row{grid-template-columns:repeat(auto-fit,minmax(132px,1fr));}
+  #drawerBody .pill{min-height:48px;font-size:12px;}
+  #drawerTitle{font-size:13px;}
+  /* ⚠ 案内のふきだしも右へ寄せる。下いっぱいに敷くと、横では犬がまるごと隠れた
+     （番付で「不透明ぶん 100%」と出ていたのがこれ。breedOk / temperAsk） */
+  #tutBubble,#tutBubble.low{
+    left:auto;right:max(8px,env(safe-area-inset-right));
+    width:min(46vw,380px);border-radius:20px;border-width:2px;
+    padding-bottom:14px;
+  }
+  #tutBubble.low{bottom:max(8px,env(safe-area-inset-bottom));}
+  /* 確認シートも右へ（下いっぱいだと、横では犬の上に乗る） */
+  #sheet{
+    left:auto;right:0;top:0;bottom:0;width:min(52vw,420px);
+    justify-content:center;border-radius:22px 0 0 22px;
+    padding:16px 14px calc(16px + env(safe-area-inset-bottom));
+  }
+}
+</style>
+  <script type="module" crossorigin src="./assets/index-BKT4NCoI.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/three-ezwk2N_1.js">
+</head>
+<body>
+<div id="app">
+  <div id="three"></div>
+  <div id="topBar">
+    <div id="leftCol" style="display:flex;flex-direction:column;gap:6px;align-items:flex-start;">
+      <!-- うちの子の名前。**飼っている子は全員ぶん並べる**（多頭飼いで
+           1匹しか出ていないと、その子だけを特別扱いしているように見える）。
+           左の丸はその子の毛色。いま相手をしている子だけ枠が濃くなる。
+           中身は src/app/dogs.ts の renderDogBar() が組み立てる -->
+      <div id="dogBar" style="display:flex;flex-direction:column;gap:5px;align-items:flex-start;"></div>
+      <!-- いまトリミング中の子。多頭だと「誰を触っているのか」が名前だけでは分かりにくい -->
+      <div id="trimChip" style="display:none;align-items:center;gap:6px;background:var(--collar);border:2px solid #D45A1F;border-radius:14px;padding:5px 10px;font-size:11px;font-weight:800;color:#fff;box-shadow:0 2px 0 #D45A1F;"></div>
+      <div id="realChip" style="display:none;align-items:center;gap:6px;background:var(--cream);border:2px solid var(--ink);border-radius:14px;padding:4px 8px 4px 4px;font-size:10px;font-weight:800;color:var(--ink);box-shadow:0 2px 0 rgba(43,58,70,.25);"><img id="realImg" alt="実物" style="width:34px;height:34px;border-radius:10px;object-fit:cover;border:2px solid #fff;">実物の色を再現中</div>
+    </div>
+    <!-- 右の列：財布と、ドッグランの中だけ「👥 ともだち」（オンラインの部屋。src/ui/dogrunNetUi.ts。案A） -->
+    <div id="rightCol" style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+      <!-- 🔊／🔇 犬・猫の声（src/app/sounds.ts。2026-09-29 の利用者「音あり・すぐ消せる」）。財布の左どなり -->
+      <div id="walletRow">
+        <button class="pill" id="soundBtn" aria-label="おとを けす">🔊</button>
+        <div id="wallet">💰 <span id="coins">300</span>円</div>
+      </div>
+      <button class="pill" id="netPill" style="display:none">👥 ともだち</button>
+      <!-- ドッグランの中だけ「🎾 とってこい」（みんなで とってこい。src/app/dogrunFetch.ts・src/ui/dogrunFetchUi.ts）。遊んでいるあいだは「🎾 おしまい」 -->
+      <button class="pill" id="fetchPill" style="display:none">🎾 とってこい</button>
+    </div>
+  </div>
+  <div id="hint">「🦮 おでかけ」から、いま居る場所の写真をとってみて！</div>
+  <div id="trimRotateHint">↔️ 左右にスワイプして360°チェック</div>
+
+  <!-- 家具配置専用画面。犬と普段の操作を隠し、保存済みの場所を枠で見せる。 -->
+  <div id="furnPlaceUi" aria-live="polite">
+    <div id="furnPlaceGuide">
+      <div id="furnPlaceTitle">家具をどこに配置しますか？</div>
+      <div id="furnPlaceHelp">写真の床をタップして場所を選んでください。お水は指でスワイプして位置を調整できます。<br>指を離しただけでは保存されません。</div>
+    </div>
+    <div id="furnPlaceToolbar">
+      <div class="furnLegend">
+        <span><i class="furnDot" style="background:#ff9a3c"></i>ソファ</span>
+        <span><i class="furnDot" style="background:#5ac8fa"></i>クッション</span>
+        <span><i class="furnDot" style="background:#64c9f4"></i>お水</span>
+        <span><i class="furnDot" style="background:#49d17d"></i>新しい候補</span>
+        <span><i class="furnDot" style="background:#ff5a6c"></i>選択中</span>
+      </div>
+      <div id="furnPlaceStatus"></div>
+      <div class="row">
+        <button class="pill" id="furnSofaBtn">🛋 ソファ</button>
+        <button class="pill" id="furnCushionBtn">🛏 クッション</button>
+        <button class="pill" id="furnWaterBtn">💧 お水</button>
+      </div>
+      <div class="row">
+        <button class="pill hero" id="furnConfirmBtn" style="display:none">✅ ここに置く</button>
+        <button class="pill" id="furnCancelBtn" style="display:none">↺ やり直す</button>
+        <button class="pill" id="furnRemoveBtn" style="display:none">🗑 この家具を消す</button>
+        <button class="pill" id="furnDoneBtn">完了</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 散歩中の画面。犬を見ていたいので、出すのは
+       「いまどこ」「あとどれくらい」「やめる」「マイク」「撮る」だけ。
+       ドック（きせかえ・ごはん…）は散歩のあいだ隠す（src/ui/controls.ts）。 -->
+  <div id="strollUi">
+    <div id="strollTop">
+      <div id="strollWhere">おうちの前</div>
+      <div id="strollBarOuter"><div id="strollBar"></div></div>
+      <div id="strollLeft">あと 5:00</div>
+    </div>
+    <!-- 分かれ道。⚠ ボタンは strollFork の選択肢の配列から組み立てる
+         （将来 3択になる。数を決め打ちにしない） -->
+    <div id="strollAsk">どっちに行く？</div>
+    <div id="strollForkUi"></div>
+    <div id="strollBottom">
+      <button class="pill" id="strollQuitBtn">🏠 もどる</button>
+      <!-- 🎤 は #mainBar から実物を移してくる（src/ui/controls.ts の initStrollUi） -->
+      <button class="pill" id="strollMapBtn">🗺</button>
+      <button class="pill hero" id="strollShotBtn">📸</button>
+    </div>
+  </div>
+
+  <!-- さんぽの地図。世界の座標をそのまま写した2Dの絵（手描きにしない＝必ずずれる）。
+       ⚠ 開いても散歩は止まらない。分かれ道で待ちが立ったら自動で閉じる。 -->
+  <div id="strollMap">
+    <canvas id="strollMapCanvas"></canvas>
+    <button class="pill" id="strollMapClose">とじる</button>
+    <div id="strollMapLegend">
+      🏠 おうち　🌳 こうえん　🏪 まちかど　🦆 いけのこうえん<br>
+      濃い線＝歩いてきた道　点線＝これから行く道
+    </div>
+  </div>
+
+  <!-- フリスビー遊び。「いま何をすればいいか」と「やめる」だけ。
+       犬を見ていたいので、これ以上は出さない（散歩の画面と同じ考え） -->
+  <!-- ドッグランの とってこい：手元のボールの上の案内（src/ui/dogrunFetchUi.ts） -->
+  <div id="fetchHint">👆 スワイプで なげてね</div>
+  <div id="frisbeeUi">
+    <div id="frisbeeTop">
+      <div style="display:flex;flex-direction:column;gap:2px;">
+        <div id="frisbeeHint">🥏 スワイプして投げてね！</div>
+        <div id="frisbeeScore">キャッチ 0かい</div>
+      </div>
+      <button class="pill" id="frisbeeQuitBtn">おしまい</button>
+    </div>
+  </div>
+
+  <div id="dock">
+    <div class="row" id="goRow">
+      <button class="pill hero" id="goBtn" style="display:none;font-size:17px;padding:12px 28px;">🍚 よし！</button>
+      <!-- 見た目をいじれる間だけ出る。押すと確認シートへ -->
+      <button class="pill hero" id="confirmLookBtn" style="display:none;font-size:15px;padding:11px 22px;">✅ この子でいく！</button>
+      <button class="pill" id="cancelTrimBtn" style="display:none;">やめる</button>
+    </div>
+    <!-- ⚠ **犬への働きかけは「🐾 おねがい」1か所**（設計書 12章。利用者の提案）。
+         ごはん・おやつの直置き段（#dailyBar）と「🎾 あそぶ」の札はここで畳んだ——
+         「画面の選択肢が多すぎてごちゃごちゃして初心者は離れる」。
+         ⚠ 引きかえに、ごはんは 1タップ → 2タップに戻る（利用者の判断：選択肢の少なさ > 1タップ）。
+         ⚠ **ボタンの id と押したときの動きは 1つも変えていない**（居場所が変わっただけ）。 -->
+    <div class="row" id="mainBar">
+      <button class="pill tab" id="askTab" data-panel="panel-ask">🐾 おねがい</button>
+      <button class="pill tab" data-panel="panel-closet">👕 きせかえ</button>
+      <button class="pill tab" data-panel="panel-dog">🐶 うちの子</button>
+      <button class="pill tab" data-panel="panel-home">🦮 おでかけ</button>
+      <!-- 声でよびかける。押したときだけ聞く（黙ってマイクを開けない）。
+           ⚠ さんぽ中はこのボタンの実物が #strollBottom へ移る（controls.ts の initStrollUi）。
+           あちらは段が狭いので「こえ」の字は付けない -->
+      <button class="pill" id="voiceBtn">🎤 こえ</button>
+      <button class="pill hero" id="shotBtn">📸</button>
+    </div>
+    <!-- 🗂 引き出し（ボトムシート）。設計書 docs/ui-reorg-design.md 11章 (1)。
+         タブを押すと画面の下から**不透明のカード**が出る——スマホの共有シートと同じ型で、
+         **みんながもう知っている動き**を借りる。
+         ⚠ 高さは頭打ち（40dvh）。あふれたら中がスクロールする。**積み上がらない**のが肝で、
+            前の「ボタンの雲が犬の上に積み上がる」作りはここで終わっている。
+         ⚠ **中のボタンは id も押したときの動きも 1つも変えていない**（入れ物が変わっただけ）。
+            チュートリアルが id で照準しているので、ここを変えると案内が壊れる。
+         ⚠ 開いているあいだ、シートの高さは「犬がよける」ぶん（app/animate.ts の
+            applyViewStage）にそのまま渡る——犬はシートの上の空きに写る。 -->
+    <div id="drawer">
+      <div id="drawerHead">
+        <div id="drawerTitle"></div>
+        <button class="pill" id="drawerClose">とじる</button>
+      </div>
+      <div id="drawerBody">
+      <div class="row panel" id="panel-breed">
+        <button class="pill mini" data-breed="shiba">柴犬</button>
+        <button class="pill mini" data-breed="poodle">プードル</button>
+        <button class="pill mini" data-breed="chihuahua">チワワ</button>
+        <button class="pill mini" data-breed="dachshund">ダックス</button>
+        <button class="pill mini" data-breed="corgi">コーギー</button>
+        <button class="pill mini" data-breed="retriever">レトリバー</button>
+      </div>
+      <div class="row panel" id="panel-body">
+        <button class="pill mini" data-body-type="slim">細め</button>
+        <button class="pill mini" data-body-type="normal">普通</button>
+        <button class="pill mini" data-body-type="plump">太め</button>
+      </div>
+      <!-- 🐱 ねこの柄（設計 docs/cat-design.md 4章・6章）。犬の「犬種をえらぶ」と同じ位置づけ。
+           ⚠ 中身は controls.ts が `CAT_COATS` から組み立てる（表を2か所に書かない） -->
+      <div class="row panel" id="panel-catcoat"></div>
+      <!-- 🔊 こえ（src/ui/voiceUi.ts）。中身は開くときに組む -->
+      <div class="row panel col" id="panel-voice"></div>
+      <!-- 🏷️ あだ名（src/ui/nickUi.ts）。中身は開くときに組む -->
+      <div class="row panel col" id="panel-nick"></div>
+      <!-- 👕 きせかえ。⚠ **持っている服も、まだ持っていない服も、ここに全部並ぶ**。
+           買うと値札が消えて、そのボタンがその場に残るだけ。前は「買った服は
+           ショップからきせかえへ移る」ので、どこへ行ったかを覚えるのが利用者の仕事だった。
+           ⚠ 課金の流れ（買う確認・財布・所持の反映）は 1行も変えていない -->
+      <div class="row panel" id="panel-closet">
+        <button class="pill" data-slot="eyes" data-item="glasses">🕶 グラサン</button>
+        <button class="pill" data-slot="eyes" data-item="glassesTint">👓 うすいろグラサン</button>
+        <button class="pill" data-slot="head" data-item="strawhat">👒 むぎわら</button>
+        <button class="pill" data-slot="neck" data-item="bandana">🔺 バンダナ</button>
+        <button class="pill" data-slot="head" data-item="cap">🧢 キャップ</button>
+        <button class="pill" data-slot="body" data-item="vest">🩲 マナーパンツ</button>
+        <button class="pill" data-slot="body" data-item="warmer">🧶 着る腹巻</button>
+        <button class="pill" data-slot="body" data-item="warmerHeart">💗 着る腹巻ハート</button>
+        <button class="pill" data-slot="body" data-item="knitSuit">🧥 前後袖つきニット</button>
+      </div>
+      <!-- 🐾 おねがい（設計書 docs/ui-reorg-design.md 12章）。
+           **犬にお願いすることを1か所に集める。** 頭の中の地図が「犬への働きかけ＝ここ」になる。
+           ⚠ **わざ（お手・おかわり・おすわり・ふせ・おいで）に、はじめてボタンが付いた。**
+              前は声（🎤）でしか出せなかった＝声を使わない人（お年寄り・無言でやる人）には
+              存在しない機能だった。ボールを常設にしたのと同じ理由。
+           ⚠ **わざのボタンは声とまったく同じ経路を呼ぶ**（voiceCommands の runCommand）。
+              二重に書くと、声とボタンで犬の反応が違ってくる。
+           ⚠ 見出しで3つに割る（型は「うちの子」と同じ）。同じ見た目のボタンが9個並ぶと、
+              読む前に諦める。
+           ⚠ **ただいま・かたづけ・ハウスは載せない**（場面が限られ、列が長くなる。
+              声はいままでどおり効く）。 -->
+      <div class="row panel col" id="panel-ask">
+        <!-- ボタンの言葉が、そのまま声の合図になっている（voice/commands.ts の READINGS） -->
+        <div class="askNote">🎤 こえで言ってもOK！</div>
+        <div class="panelHead">たべる</div>
+        <div class="row">
+          <button class="pill" id="mealBtn">🍚 ごはん</button>
+          <button class="pill" id="treatBtn">🦴 おやつ</button>
+        </div>
+        <!-- ⚠⚠ **「わざ」は「あそぶ」より上**（2026-08-24・利用者の判断）。
+             設計書 12章の並びは たべる → あそぶ → わざ だったが、🧺かたづけ と おうち を
+             足して中身が 563px になり、**320×568 では わざ の見出しが折り返しの外**へ
+             出てしまった（あそぶ が2段になった 64px ぶん）。
+             **画面に出ていない機能は、初心者には存在しない**——わざは今回はじめて
+             ボタンが付いたところなので、いちばん見えなくてはいけない。
+             ⚠ 3列に詰める案は、語の途中で折れたのでやめた（上の CSS の ⚠⚠）。 -->
+        <div class="panelHead" id="askSkillHead">わざ</div>
+        <div class="row" id="askSkillRow">
+          <button class="pill" data-cmd="ote">✋ お手</button>
+          <button class="pill" data-cmd="okawari">🤚 おかわり</button>
+          <button class="pill" data-cmd="osuwari">🐕 おすわり</button>
+          <button class="pill" data-cmd="fuse">⬇️ ふせ</button>
+          <button class="pill" data-cmd="oide">🐾 おいで</button>
+        </div>
+        <!-- ⚠ **おもちゃは無料**（2026-08-25・設計書 8.3節）。最初から持っているので値札は付かない。
+             ⚠ フリスビーは公園でだけ始まる（src/app/frisbee.ts）ので、外では薄くして理由を出す -->
+        <div class="panelHead" id="askPlayHead">あそぶ</div>
+        <div class="row" id="askPlayRow">
+          <!-- ⚠ 言いかたは「🎾 ボール」だけ（「🎾 ボールであそぶ」から縮めた）。
+               見出し「あそぶ」の下なので、それだけで伝わる（設計書 12章の表記）。 -->
+          <button class="pill" data-toy="ball">🎾 ボール</button>
+          <button class="pill" data-toy="frisbee">🥏 フリスビー</button>
+          <!-- 出したおもちゃを箱へ戻す。⚠ 声の「かたづけ」と同じ経路（runCommand） -->
+          <button class="pill" data-cmd="katazuke">🧺 かたづけ</button>
+        </div>
+        <!-- ⚠ 「よし」と名前よびは載せない（「よし」は ごはんの流れで大きなボタンとして
+             既に出る／名前よびは犬をタップするのと同じこと）。 -->
+        <div class="panelHead" id="askHomeHead">おうち</div>
+        <div class="row" id="askHomeRow">
+          <button class="pill" data-cmd="tadaima">🙌 ただいま</button>
+          <!-- ⚠ ハウスは 2匹からしか効かない（1匹だと「ひとりは、さみしいよ…」。
+               src/app/house.ts）。効かない場面では薄くして理由を出す -->
+          <button class="pill" data-cmd="house">🏠 ハウス</button>
+        </div>
+      </div>
+      <!-- 🐶 うちの子。⚠ **見出しで2つに割る**（型は「せいかく」の画面と同じ）。
+           11個が同じ見た目で並ぶと、読む前に諦める（とくにお年寄り）。
+           ⚠ 「この子のこと」の見出しを7回タップすると、開発用の「🔎 しらべる」が出る -->
+      <div class="row panel col" id="panel-dog">
+        <div class="panelHead" id="dogAboutHead">この子のこと</div>
+        <!-- なかよし度（src/app/bond.ts）のうち、利用者に出すのは この1行だけ（迎えた日から。段・点・♡の棒は出さない。docs/bond-design.md §6） -->
+        <div id="dogTogether"></div>
+        <div class="row">
+          <button class="pill" id="dogListBtn">🐕 うちの子いちらん</button>
+          <button class="pill" id="photoDogBtn">📷 写真1枚から自動でつくる</button>
+          <!-- 性格は見た目ではないので、確定後もいつでも無料で変えられる -->
+          <button class="pill" id="temperBtn">🐾 せいかく</button>
+          <!-- こえ（src/ui/voiceUi.ts）。⚠ 見た目ではないので、トリミングに入らなくても いつでも変えられる（2026-09-30 の利用者が選んだ 案B） -->
+          <button class="pill" id="dogVoiceBtn">🔊 こえ</button>
+          <!-- あだ名（src/ui/nickUi.ts）。声で呼ぶと振り向く。⚠ 見た目ではないので、いつでも変えられる -->
+          <button class="pill" id="dogNickBtn">🏷️ あだ名</button>
+          <!-- 奥行きは内部実装と保存値だけ残し、再開するまでユーザー画面には出さない。 -->
+          <button class="pill" id="depthToggleBtn" style="display:none">🧊 奥行き</button>
+          <!-- ⚠ 開発用。ふだんは出さない（上の見出しを7回タップで出る） -->
+          <button class="pill" id="diagBtn" style="display:none">🔎 しらべる</button>
+        </div>
+        <!-- 見出しは「みため」（2026-10-02 の利用者が絵で選んだ）。前は「みためをかえる」で、確定したあとの ボタン「✨ みためをかえる」と
+             同じ言葉が 並んでいた。ボタンの言葉は利用者が決めたものなので、見出しのほうを短くした -->
+        <div class="panelHead">みため</div>
+        <div class="row">
+          <!-- ⚠⚠ **まだ「この子でいく！」を押していない子だけ**（利用者の判断 2026-08-26）。
+               これがあるので **1匹目からねこを選べる**＝ねこだけの家が作れる。
+               決めたあとは出ない（骨とレコードが 1対1 なので、途中では入れ替えない）。
+               ⚠ 文言は refreshLookUi が書き換える（いぬ ⇄ ねこ） -->
+          <button class="pill" id="speciesSwapBtn" style="display:none;">🐱 ねこにする</button>
+          <!-- ⚠ ねこ専用。犬では出さない（設計 6章「効かない項目は出さない」）。
+               出しわけは refreshLookUi の1か所（src/ui/trimUi.ts）。
+               ⚠⚠ **がらもここから入る**（S2a・2026-08-26）。前は「🐱 がらをえらぶ」を
+                  ここに置いていたが、柄はスタジオの「🎨 いろ」タブへ畳んだ——
+                  柄を変える道が2本あると、どちらが正なのか分からなくなる。 -->
+          <button class="pill" id="catStudioBtn" style="display:none;">✨ みためを こまかく</button>
+          <button class="pill" id="breedBtn">🐩 犬種をえらぶ</button>
+          <button class="pill" id="bodyTypeBtn">🐕 体型をえらぶ</button>
+          <button class="pill" id="furBtn">🎨 毛色をかえる</button>
+          <button class="pill" id="earBtn">👂 耳のながさ</button>
+          <!-- 耳の形と毛の長さは犬種と切り離してある。写真の子が犬種と違う耳でも、
+               このソフトに無い犬種でも、いちばん近い形に寄せられるように -->
+          <button class="pill" id="earShapeBtn">👂 耳の形</button>
+          <button class="pill" id="coatLenBtn">🐕 毛のながさ</button>
+          <button class="pill" id="eyeSizeBtn">👀 目のおおきさ</button>
+          <button class="pill" id="browBtn">✨ まろ眉</button>
+          <!-- ⚠ 犬の既存プリセット札はチュートリアルの照準でもあるため残す。
+               その並びの最後へ、S4 の細かい調整入口だけを足す。
+               案内中の非表示は refreshLookUi の tutorialActive() が持つ。 -->
+          <button class="pill" id="dogStudioBtn" style="display:none;">✨ こまかく調整</button>
+          <!-- ⚠ **無料になった**（2026-08-25。設計書 8.3節）。前は「✂️ トリミング ¥100」。
+               ⚠ 表記は refreshLookUi が書き換える（ほかの子に替えるときは「✨ ほかの子にする」） -->
+          <button class="pill" id="trimBtn" style="display:none;">✨ みためをかえる</button>
+        </div>
+      </div>
+      <div class="row panel" id="panel-home">
+        <label class="pill" for="placeInput" style="display:inline-block;">📷 ここの写真</label>
+        <button class="pill" id="placeListBtn">🗺 おでかけ先</button>
+        <!-- ⚠ **これは「いま居る場所」の名前を変えるボタン**（犬の名前ではない。
+             犬の名前は左上の名札で直に書きかえる）。設計書は「うちの子」へ移す案だったが、
+             移すと「この子のこと」の下で『ここはどこ？』と聞かれることになるので、
+             おでかけ先のとなりに残して、言葉のほうを合わせた -->
+        <button class="pill" id="renameBtn">✏️ ここの名前</button>
+        <button class="pill" id="furnBtn" style="display:none">🛋 家具を配置する</button>
+        <button class="pill" id="arriveBtn" style="display:none">🐾 つれてきた！</button>
+        <button class="pill" id="strollBtn">🦮 さんぽ</button>
+        <!-- ドッグラン（src/app/dogrun.ts。設計書 docs/online-dogrun-design.md 5章）。
+             うちの子1頭＋よその子5頭。入っているあいだは「🌳 公園へもどる」になる -->
+        <button class="pill" id="dogrunBtn">🐕 ドッグラン</button>
+        <!-- さんぽであいさつした子の帳面（src/ui/friendsUi.ts）。
+             ⚠ 課金アイテムにしない（地図と同じ判断） -->
+        <button class="pill" id="friendsBtn">📖 ともだち</button>
+        <!-- さんぽの進めかた。「🦮 さんぽ」を押すと出てくる小さい段。
+             ⚠ 前に選んだほうに印が付く（毎回ゼロから聞かれるのは鬱陶しい）。
+             ⚠ 押した瞬間に出発する（段をもう1つ挟むと、さんぽが遠くなる） -->
+        <button class="pill mini" id="strollAutoBtn" style="display:none">🐾 おまかせ</button>
+        <button class="pill mini" id="strollSemiBtn" style="display:none">🗺 分かれ道は自分で</button>
+        <!-- ドッグランの入りかた（src/ui/dogrunNetUi.ts）。「🐕 ドッグラン」を押すと出る小さい段（案C。2026-09-28 の利用者）。
+             ひとりで＝いままでどおり／へやを つくる＝ともだちを呼ぶ（番号を送る）／番号で はいる＝ともだちの部屋へ -->
+        <div class="miniRow" id="dogrunRow" style="display:none">
+          <button class="pill mini" id="dogrunSoloBtn">🌳 ひとりで</button>
+          <button class="pill mini hero" id="dogrunMakeBtn">🏠 へやを つくる</button>
+          <button class="pill mini" id="dogrunJoinBtn">🔢 番号で はいる</button>
+        </div>
+      </div>
+      </div>
+    </div>
+    <!-- ✨ いぬ・ねこの調整スタジオ（src/cat/catStudio.ts）。設計 docs/pet-studio-design.md 4章。
+         ⚠⚠ **引き出しの「弟」としてドックの中に置く。** 全画面の板にしなかったのは、
+            **犬がよける仕組み（app/animate.ts の applyViewStage）が `#dock` の高さを
+            そのまま見ている**から——ここに置けば、猫は勝手に上の空きへ写る。
+            画面ぜんたいを覆う overlay にすると、あの仕組みが「どの端を食っているか」を
+            決められない（矩形が画面と同じなので、寄せる先が無い）。
+         ⚠ 「✅ この子でいく！」「✨ しあげる！」は上の #goRow のまま。
+            決めるボタンをスタジオの中にも作らない（どちらが効くのか分からなくなる）。
+         ⚠ 中身（タブとスライダー）は catStudio.ts が組み立てる。ここは入れ物だけ。 -->
+    <div id="studio">
+      <div id="studioHead">
+        <div>
+          <div id="studioTitle">✨ みためを こまかく</div>
+          <!-- ⚠ 回転ヒント（#trimRotateHint）はスタジオ中は畳むので、言葉だけここへ移した -->
+          <div id="studioNote">↔️ よこに スワイプすると まわせるよ</div>
+        </div>
+        <button class="pill" id="studioClose">とじる</button>
+      </div>
+      <div id="studioTabs"></div>
+      <div id="studioBody"></div>
+    </div>
+    <!-- 👕 きせかえ・ショップ（docs/shop-design.md。2026-09-30 の利用者が絵で選んだ 案B「試着室で ためす」）。
+         ⚠ スタジオと同じく #dock の中に置く（カメラは「下の段が食っている高さ」を見て、犬を上の空きへ寄せる）。
+         ⚠ 中身（えらんでいるもの・タブ・カード・ごうけい）は src/ui/shopUi.ts が組み立てる。ここは入れ物だけ -->
+    <div id="shop">
+      <div id="shopHead">
+        <div>
+          <div id="shopTitle">👕 きせかえ・ショップ</div>
+          <div id="shopNote">↔️ よこに スワイプすると まわせるよ</div>
+        </div>
+        <button class="pill" id="shopClose">✕ もどる</button>
+      </div>
+      <div id="shopWearing"></div>
+      <div id="shopTabs"></div>
+      <div id="shopBody"></div>
+      <div id="shopBuyBar"></div>
+    </div>
+  </div>
+
+  <!-- おでかけ先をえらぶ -->
+  <div id="placeOverlay" style="position:absolute;inset:0;background:rgba(20,28,34,.94);z-index:26;display:none;flex-direction:column;align-items:center;gap:10px;padding:16px 12px;">
+    <div style="color:#fff;font-weight:800;font-size:14px;">🗺 おでかけ先をえらぶ</div>
+    <!-- grid-auto-rows と align-content を指定しないと、行が親の高さに合わせて
+         縮められてカードの中身（名前・日付）が隠れる -->
+    <div id="placeGrid" style="display:grid;grid-template-columns:repeat(2,1fr);grid-auto-rows:min-content;align-content:start;gap:8px;width:100%;max-width:460px;overflow-y:auto;flex:1;padding:4px;"></div>
+    <button class="pill" id="placeClose">とじる</button>
+  </div>
+
+  <!-- うちの子をえらぶ -->
+  <div id="dogOverlay" style="position:absolute;inset:0;background:rgba(20,28,34,.94);z-index:26;display:none;flex-direction:column;align-items:center;gap:10px;padding:16px 12px;">
+    <div style="color:#fff;font-weight:800;font-size:14px;">🐕 うちの子をえらぶ</div>
+    <div id="dogGrid" style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:460px;overflow-y:auto;flex:1;padding:4px;"></div>
+    <button class="pill" id="dogClose">とじる</button>
+  </div>
+
+  <!-- 🐶 いぬ／🐱 ねこ をえらぶ（むかえる流れの最初。設計 docs/cat-design.md 6章）。
+       ⚠ **ここでしか species は決まらない**——あとから犬↔猫には変えられない
+         （骨とレコードが 1対1 で、途中で入れ替えると保存が別の生きものになる）。
+       ⚠ 2つしか無いので大きく出す（初心者を圧倒しない、が画面整理の決めごと） -->
+  <div id="speciesOverlay" style="position:absolute;inset:0;background:rgba(20,28,34,.94);z-index:27;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px 12px;">
+    <div style="color:#fff;font-weight:800;font-size:15px;">どっちの子をむかえる？</div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
+      <button class="pill" id="pickDogSpecies" style="min-width:130px;height:96px;font-size:17px;">🐶<br>いぬ</button>
+      <button class="pill" id="pickCatSpecies" style="min-width:130px;height:96px;font-size:17px;">🐱<br>ねこ</button>
+    </div>
+    <div style="color:#93a6b3;font-weight:700;font-size:11px;text-align:center;max-width:300px;">
+      あとから いぬ⇄ねこ には かえられないよ。<br>みための こまかいところは あとで かえられる。
+    </div>
+    <button class="pill" id="speciesClose">やめる</button>
+  </div>
+
+  <!-- さんぽで あいさつした子（src/ui/friendsUi.ts）。⚠ うちの子いちらんと同じ形 -->
+  <div id="friendsOverlay" style="position:absolute;inset:0;background:rgba(20,28,34,.94);z-index:26;display:none;flex-direction:column;align-items:center;gap:10px;padding:16px 12px;">
+    <div style="color:#fff;font-weight:800;font-size:14px;">📖 ともだち</div>
+    <!-- ドッグランで交換したカード（src/ui/friendsUi.ts の renderCardGrid）と、さんぽで あった子 -->
+    <div id="friendTabs">
+      <button class="ftab" data-ftab="cards">🃏 カード</button>
+      <button class="ftab" data-ftab="walk">🐾 さんぽで あった子</button>
+    </div>
+    <div id="friendGrid" style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:460px;overflow-y:auto;flex:1;padding:4px;"></div>
+    <div id="cardGrid"></div>
+    <button class="pill" id="friendsClose">とじる</button>
+  </div>
+
+  <!-- プロフィールカード（B トレカ。src/ui/profileCardUi.ts）。中身は開くときに組む -->
+  <div id="cardOverlay"><div id="cardWrap"></div></div>
+
+  <!-- オンラインの部屋（作る・番号で入る・部屋の中。src/ui/dogrunNetUi.ts）。中身は開くときに組む -->
+  <div id="netSheet"><div id="netSheetBody"></div></div>
+
+  <!-- どの子をトリミングするか、名前で選ぶ -->
+  <div id="trimPickOverlay" style="position:absolute;inset:0;background:rgba(20,28,34,.94);z-index:27;display:none;flex-direction:column;align-items:center;gap:10px;padding:16px 12px;">
+    <!-- ⚠ 無料になったので ✂️ をやめた（2026-08-25。設計書 8.3節）。
+         ここは「✨ みためをかえる」を押した次の画面なので、言いかたを合わせる -->
+    <div style="color:#fff;font-weight:800;font-size:14px;">✨ どの子のみためをかえる？</div>
+    <div id="trimPickGrid" style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:460px;overflow-y:auto;flex:1;padding:4px;"></div>
+    <button class="pill" id="trimPickClose">やめる</button>
+  </div>
+
+  <!-- せいかく（無料・いつでも変えられる。トリミングとは別枠） -->
+  <div id="temperOverlay" style="position:absolute;inset:0;background:rgba(20,28,34,.94);z-index:26;display:none;flex-direction:column;align-items:center;gap:10px;padding:16px 12px;">
+    <div style="color:#fff;font-weight:800;font-size:14px;">🐾 せいかく</div>
+    <div style="color:#93a6b3;font-weight:700;font-size:10px;text-align:center;line-height:1.7;">いつでも何度でも変えられるよ<br>ほんとうの犬も、暮らすうちに変わっていくから</div>
+    <div id="temperGrid" style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:460px;overflow-y:auto;flex:1;padding:4px;"></div>
+    <button class="pill" id="temperClose">とじる</button>
+  </div>
+
+  <!-- お顔を円で囲んで毛色よみとり -->
+  <div id="faceOverlay" style="position:absolute;inset:0;background:rgba(20,28,34,.94);z-index:25;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:14px;">
+    <div id="faceTitle" style="color:#fff;font-weight:800;font-size:13px;text-align:center;line-height:1.7;"></div>
+    <div style="position:relative;max-width:100%;max-height:54dvh;">
+      <img id="faceImg" alt="うちの子" style="display:block;max-width:100%;max-height:54dvh;border-radius:12px;">
+      <canvas id="faceCanvas" style="position:absolute;inset:0;touch-action:none;border-radius:12px;"></canvas>
+    </div>
+    <div id="faceChips" style="display:none;gap:10px;align-items:center;">
+      <span style="color:#fff;font-weight:800;font-size:12px;">よみとった色：</span>
+      <span id="chip0" style="width:34px;height:34px;border-radius:50%;border:3px solid #fff;display:inline-block;"></span>
+      <span id="chip1" style="width:34px;height:34px;border-radius:50%;border:3px solid #fff;display:inline-block;"></span>
+      <span id="chip2" style="width:34px;height:34px;border-radius:50%;border:3px solid #fff;display:inline-block;"></span>
+    </div>
+    <div class="row">
+      <button class="pill hero" id="faceApply" style="display:none">✅ この色で決定</button>
+      <button class="pill" id="faceRetry" style="display:none">↺ 囲みなおす</button>
+      <button class="pill" id="faceCancel">やめる</button>
+    </div>
+  </div>
+
+  <!-- 写真を選ぶだけで、犬の領域・色・模様・体格を端末内で自動解析する。 -->
+  <div id="photoDogOverlay" role="dialog" aria-modal="true" aria-labelledby="photoDogTitle">
+    <div id="photoDogGuide">写真を1枚選ぶだけです</div>
+    <div id="photoDogCard">
+      <div class="photoDogHeading" id="photoDogTitle">写真を1枚選んでください</div>
+      <div class="photoDogNote" id="photoDogIntro">
+        犬がなるべく大きく写っている写真を選んでください。<br>服を着ていても自動で見分けます。
+      </div>
+      <div class="row" id="photoDogPick">
+        <label class="pill hero" for="photoDogCamInput">📷 カメラで撮る</label>
+        <label class="pill" for="photoDogInput">🖼️ 写真を選ぶ</label>
+      </div>
+      <div id="photoDogLoading" aria-live="polite">
+        <div class="photoDogSpinner" aria-hidden="true"></div>
+        <div>写真からこの子を作っています…</div>
+        <div class="photoDogNote">毛色・模様・体つきを自動で読み取ります</div>
+      </div>
+      <div id="photoDogCanvasWrap">
+        <canvas id="photoDogCanvas"></canvas>
+      </div>
+      <div id="photoDogResult">
+        <div id="photoDogBreedReview">
+          <div id="photoDogBreedResult">犬種を確認中</div>
+          <button class="pill mini" id="photoDogBreedChange" data-photo-breed-toggle>違う</button>
+          <div class="photoDogBreedHint" id="photoDogBreedHint">違うときだけ、近い犬種を1回押してください</div>
+          <div class="photoDogChoices">
+            <button class="pill mini" data-photo-breed="shiba">柴犬</button>
+            <button class="pill mini" data-photo-breed="poodle">プードル</button>
+            <button class="pill mini" data-photo-breed="chihuahua">チワワ</button>
+            <button class="pill mini" data-photo-breed="dachshund">ダックス</button>
+            <button class="pill mini" data-photo-breed="corgi">コーギー</button>
+            <button class="pill mini" data-photo-breed="retriever">レトリバー</button>
+          </div>
+        </div>
+        <!-- 毛の長さと耳の形。写真からは読み切れないところなので、ここで一手で直せるようにする
+             （犬種と切り離してあるので、写真の子に近い組み合わせにできる） -->
+        <div id="photoDogLookReview">
+          <div class="photoDogLookRow">
+            <span class="photoDogLookLabel">毛</span>
+            <button class="pill mini" data-photo-coat="short">みじかめ</button>
+            <button class="pill mini" data-photo-coat="long">ながめ</button>
+            <button class="pill mini" data-photo-coat="fluffy">ふわふわ</button>
+          </div>
+          <div class="photoDogLookRow">
+            <span class="photoDogLookLabel">耳</span>
+            <button class="pill mini" data-photo-ear="auto">犬種どおり</button>
+            <button class="pill mini" data-photo-ear="point">立ち耳</button>
+            <button class="pill mini" data-photo-ear="flop">たれ耳</button>
+            <button class="pill mini" data-photo-ear="big">大きな耳</button>
+          </div>
+        </div>
+        <div class="row">
+          <button class="pill hero" id="photoDogApply">✅ この子で決定</button>
+          <button class="pill" id="photoDogRecrop">📷 撮り直す</button>
+        </div>
+      </div>
+      <div class="row" id="photoDogCancelRow"><button class="pill" id="photoDogCancel">やめる</button></div>
+    </div>
+  </div>
+
+  <div id="shareModal">
+    <img id="shareCard" alt="自慢ショット">
+    <div class="row">
+      <a class="pill hero" id="dlBtn" download="uchinoko.png">💾 保存してシェア</a>
+      <button class="pill" id="shareClose">とじる</button>
+    </div>
+  </div>
+  <!-- 待ち時間の表示（奥行きを調べています…） -->
+  <div id="work">
+    <div id="workTitle"></div>
+    <div id="workBarOuter"><div id="workBar"></div></div>
+    <div id="workNote"></div>
+  </div>
+
+  <!-- 確認シート（この子でいいですか？ / この仕上がりでいい？） -->
+  <div id="sheet">
+    <div id="sheetTitle"></div>
+    <div id="sheetBody"></div>
+    <div class="row">
+      <button class="pill hero" id="sheetYes"></button>
+      <button class="pill" id="sheetNo"></button>
+    </div>
+  </div>
+
+  <!-- 初回だけの案内（src/app/tutorial.ts）。中身は step ごとに書き換える -->
+  <div id="tut">
+    <div class="tutDim" id="tutDimT"></div>
+    <div class="tutDim" id="tutDimB"></div>
+    <div class="tutDim" id="tutDimL"></div>
+    <div class="tutDim" id="tutDimR"></div>
+    <div id="tutRing"></div>
+    <div id="tutBubble">
+      <div id="tutText"></div>
+      <div id="tutNote"></div>
+      <div class="row" id="tutBtns"></div>
+    </div>
+    <button class="pill mini" id="tutBack">← もどる</button>
+    <button class="pill mini" id="tutSkip">とばす</button>
+  </div>
+
+  <div id="toast"></div>
+  <input type="file" id="placeInput" accept="image/*" style="position:absolute;left:-100px;top:0;width:1px;height:1px;opacity:0;">
+  <!-- その場で撮る用。capture が付いているとカメラが直接ひらく（アルバムを経由しない） -->
+  <input type="file" id="placeCamInput" accept="image/*" capture="environment" style="position:absolute;left:-100px;top:0;width:1px;height:1px;opacity:0;">
+  <input type="file" id="dogPhotoInput" accept="image/*" style="position:absolute;left:-100px;top:0;width:1px;height:1px;opacity:0;">
+  <input type="file" id="photoDogInput" accept="image/*" style="position:absolute;left:-100px;top:0;width:1px;height:1px;opacity:0;">
+  <input type="file" id="photoDogCamInput" accept="image/*" capture="environment" style="position:absolute;left:-100px;top:0;width:1px;height:1px;opacity:0;">
+</div>
+</body>
+</html>
