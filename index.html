@@ -113,6 +113,85 @@ canvas{display:block;}
 #panel-nick .nickChips .pill{flex:none;min-height:44px;padding:0 12px;font-size:15px;word-break:keep-all;}
 #panel-nick .nickMsg{color:#C2410C;}
 #panel-voice .voiceCapture .segRow .pill{min-width:64px;flex:0 0 auto;}
+/* ---- 📅 うちに来た日・たんじょうび（src/ui/memoryDaysUi.ts） ---- */
+/* 「この子のこと」の札：空白でだけ折る（Pixel 8a の幅 411px で「たんじょ／うび」と語の途中で折れた。机上の 390px では折れなかった） */
+#drawerBody #dogDaysBtn{word-break:keep-all;}
+#panel-days .daysRow{margin:4px 0 8px;}
+#panel-days .daysLine{display:flex;align-items:center;gap:8px;}
+#panel-days .daysLine input{flex:1 1 auto;min-width:0;font:inherit;font-size:16px;font-weight:800;color:var(--ink);
+  background:#fff;border:2px solid var(--ink);border-radius:12px;padding:8px 10px;min-height:48px;}
+#panel-days .daysLine input:focus{outline:none;border-color:var(--collar);}
+#panel-days .daysBox{position:relative;flex:1 1 auto;min-width:0;display:flex;}
+#panel-days .daysBox input{width:100%;}
+/* 空のときは 年/月/日 の見本（机上の Chrome）を消して「タップして えらぶ」だけにする */
+#panel-days .daysBox input.empty{color:transparent;}
+#panel-days .daysPh{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#93a6b3;font-weight:800;font-size:15px;pointer-events:none;}
+#panel-days .daysLine .pill{flex:none;min-height:48px;padding:0 16px;}
+/* ---- 📔 おもいで（思い出帳のアルバム。src/ui/memoryBook.ts・docs/longplay-design.md §3.4 の C）----
+   ⚠ 画面いっぱいの紙（クリーム色）。写真 3列・月の見出し・写真のない札は黄色い言葉の札。押すと大きく。
+   ⚠ 横向き（横長）の画面は 5列（3列だと 1枚が高さの半分になって、1段しか見えない） */
+#memOverlay{position:absolute;inset:0;z-index:26;display:none;flex-direction:column;background:var(--cream);color:var(--ink);
+  padding-top:env(safe-area-inset-top);padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);}
+#memOverlay.open{display:flex;}
+#memHead{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 14px 2px;width:100%;max-width:760px;margin:0 auto;}
+#memTitle{font-weight:900;font-size:18px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+#memClose{flex:none;min-height:44px;font-size:14px;padding:6px 16px;}
+#memSub{font-weight:800;font-size:13px;color:#6B7A86;padding:2px 16px 6px;width:100%;max-width:760px;margin:0 auto;}
+#memBody{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;width:100%;max-width:760px;margin:0 auto;
+  padding:0 12px calc(16px + env(safe-area-inset-bottom));}
+#memOverlay .memNote{font-weight:800;font-size:13px;color:#6B7A86;text-align:center;line-height:1.6;padding:18px 8px;}
+#memOverlay #memWarn{color:#C2410C;padding:8px;}
+#memOverlay .memMonth{font-weight:900;font-size:14px;margin:10px 4px 6px;color:#6B7A86;}
+#memOverlay .memGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;}
+@media (min-aspect-ratio: 4/3){#memOverlay .memGrid{grid-template-columns:repeat(5,minmax(0,1fr));}}
+#memOverlay .memCell{position:relative;aspect-ratio:1;border-radius:12px;overflow:hidden;background:#fff;border:2px solid #fff;
+  box-shadow:0 1px 0 2px rgba(43,58,70,.16);padding:0;margin:0;cursor:pointer;font:inherit;color:inherit;display:block;width:100%;}
+#memOverlay .memCell img{width:100%;height:100%;object-fit:cover;display:block;}
+#memOverlay .memCell .dt{position:absolute;left:6px;bottom:4px;font-size:12px;font-weight:900;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.7);}
+#memOverlay .memCell .bd{position:absolute;right:4px;top:4px;}
+#memOverlay .memCell.word{background:#FFF0C2;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:4px 5px 18px;text-align:center;font-size:12px;font-weight:900;line-height:1.35;word-break:keep-all;overflow-wrap:anywhere;}
+#memOverlay .memCell.word.start{background:#E3F2E1;}
+#memOverlay .memCell.word.bond{background:#EAF4FB;}
+#memOverlay .memCell.word .dt{color:#6B7A86;text-shadow:none;}
+#memOverlay .memCell.word .wi{font-size:20px;margin-bottom:2px;line-height:1.1;}
+#memOverlay .memTag{display:inline-block;font-size:11px;font-weight:900;padding:1px 8px;border-radius:999px;background:var(--collar);color:#fff;
+  white-space:nowrap;vertical-align:1px;}
+#memOverlay .memTag.mile{background:#E0A100;}
+#memOverlay .memTag.start{background:#5CA96C;}
+/* 押したとき（大きく） */
+#memBig{position:absolute;inset:0;z-index:2;background:rgba(43,58,70,.6);display:none;align-items:center;justify-content:center;padding:16px;}
+#memBig.open{display:flex;}
+#memBigCard{position:relative;background:var(--cream);border:2px solid var(--ink);border-radius:20px;padding:12px;width:100%;max-width:440px;
+  max-height:100%;overflow-y:auto;box-shadow:0 4px 0 rgba(43,58,70,.3);}
+#memBigPic{display:flex;align-items:center;justify-content:center;}
+#memBigPic img{display:block;width:100%;aspect-ratio:1;max-height:calc(100dvh - 250px);object-fit:cover;border-radius:14px;background:#fff;}
+#memBigPic img.card{aspect-ratio:auto;object-fit:contain;max-height:calc(100dvh - 250px);width:auto;max-width:100%;}
+#memBigPic.word{height:min(40vw,170px);border-radius:14px;background:#FFF0C2;font-size:64px;}
+#memBigPic.word.start{background:#E3F2E1;}
+#memBigPic.word.bond{background:#EAF4FB;}
+#memBigInfo .bd{font-size:14px;font-weight:900;color:#6B7A86;margin:10px 4px 2px;}
+#memBigInfo .bx{font-size:19px;font-weight:900;line-height:1.45;margin:0 4px 6px;word-break:keep-all;overflow-wrap:anywhere;}
+#memBigInfo .bn{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px;}
+#memBigInfo .bn .pill{min-height:44px;font-size:14px;padding:6px 14px;}
+#memBigInfo .bn .pill:disabled{opacity:.35;}
+#memBigInfo .bn small{font-size:12px;font-weight:800;color:#6B7A86;}
+#memBigClose{position:absolute;right:8px;top:8px;width:40px;height:40px;padding:0;font-size:16px;display:flex;align-items:center;justify-content:center;}
+/* 横向き（背の低い画面）：写真を左、言葉を右に */
+@media (orientation: landscape) and (max-height: 520px){
+  #memBigCard{display:flex;gap:12px;align-items:center;max-width:720px;}
+  #memBigPic{flex:none;}
+  #memBigPic img,#memBigPic img.card{height:calc(100dvh - 64px);max-height:none;width:auto;}
+  #memBigPic.word{width:calc(100dvh - 64px);height:calc(100dvh - 64px);}
+  #memBigInfo{flex:1;min-width:0;padding-right:36px;}
+}
+/* ---- 記念日の出迎え：紙ふぶき＋ひとこと（src/ui/annivGreet.ts）。⚠ 触れない（下のボタンはそのまま押せる） ---- */
+#annivFx{position:absolute;inset:0;width:100%;height:100%;z-index:23;pointer-events:none;}
+#annivWord{position:absolute;left:50%;top:20%;z-index:23;pointer-events:none;transform-origin:50% 50%;max-width:calc(100% - 16px);
+  background:var(--cream);border:3px solid var(--collar);color:var(--ink);border-radius:18px;padding:10px 18px;
+  box-shadow:0 4px 0 rgba(43,58,70,.25);text-align:center;word-break:keep-all;overflow-wrap:anywhere;width:max-content;}
+#annivWord b{display:block;font-weight:900;font-size:clamp(17px,5.6vw,24px);line-height:1.3;}
+#annivWord small{display:block;font-size:13px;font-weight:800;color:#6B7A86;margin-top:2px;}
 /* ⚠⚠ **「あそぶ」を3列1段にする案は、撮ってやめた。** 2列だと2段になって、その 64px が
    そのまま「わざ」の見出しを折り返しの外へ押し出す——ので3列にしてみたが、320×568 では
    ボタンが 93px（中 73px）になり、**「🥏 フリスビ／ー ¥100」と語の途中で折れた**。
@@ -857,7 +936,7 @@ body.sheetOpen #shop{pointer-events:none;}
   }
 }
 </style>
-  <script type="module" crossorigin src="./assets/index-CufLeYBv.js"></script>
+  <script type="module" crossorigin src="./assets/index-DGCPtKGf.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/three-ezwk2N_1.js">
 </head>
 <body>
@@ -1022,6 +1101,8 @@ body.sheetOpen #shop{pointer-events:none;}
       <div class="row panel col" id="panel-voice"></div>
       <!-- 🏷️ あだ名（src/ui/nickUi.ts）。中身は開くときに組む -->
       <div class="row panel col" id="panel-nick"></div>
+      <!-- 📅 うちに来た日・たんじょうび（src/ui/memoryDaysUi.ts）。中身は開くときに組む -->
+      <div class="row panel col" id="panel-days"></div>
       <!-- 👕 きせかえ。⚠ **持っている服も、まだ持っていない服も、ここに全部並ぶ**。
            買うと値札が消えて、そのボタンがその場に残るだけ。前は「買った服は
            ショップからきせかえへ移る」ので、どこへ行ったかを覚えるのが利用者の仕事だった。
@@ -1100,6 +1181,10 @@ body.sheetOpen #shop{pointer-events:none;}
         <!-- なかよし度（src/app/bond.ts）のうち、利用者に出すのは この1行だけ（迎えた日から。段・点・♡の棒は出さない。docs/bond-design.md §6） -->
         <div id="dogTogether"></div>
         <div class="row">
+          <!-- 思い出帳（src/ui/memoryBook.ts・docs/longplay-design.md §3。利用者が絵で選んだ C アルバム）。⚠ 「この子のこと」の先頭 -->
+          <button class="pill" id="dogMemBtn">📔 おもいで</button>
+          <!-- うちに来た日・たんじょうび（src/ui/memoryDaysUi.ts。どちらも空でよい）。⚠ 命日の欄は作らない -->
+          <button class="pill" id="dogDaysBtn">📅 うちに来た日 たんじょうび</button>
           <button class="pill" id="dogListBtn">🐕 うちの子いちらん</button>
           <button class="pill" id="photoDogBtn">📷 写真1枚から自動でつくる</button>
           <!-- 性格は見た目ではないので、確定後もいつでも無料で変えられる -->
@@ -1261,6 +1346,14 @@ body.sheetOpen #shop{pointer-events:none;}
     <div id="friendGrid" style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:460px;overflow-y:auto;flex:1;padding:4px;"></div>
     <div id="cardGrid"></div>
     <button class="pill" id="friendsClose">とじる</button>
+  </div>
+
+  <!-- 📔 おもいで（思い出帳のアルバム。src/ui/memoryBook.ts）。中身は開くときに組む。⚠ この端末の中だけ -->
+  <div id="memOverlay">
+    <div id="memHead"><div id="memTitle"></div><button class="pill" id="memClose">とじる</button></div>
+    <div id="memSub"></div>
+    <div id="memBody"></div>
+    <div id="memBig"><div id="memBigCard"></div></div>
   </div>
 
   <!-- プロフィールカード（B トレカ。src/ui/profileCardUi.ts）。中身は開くときに組む -->
