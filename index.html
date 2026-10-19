@@ -184,6 +184,25 @@ body.lookChipOn #hint,body.lookChipOn #toast{top:calc(var(--top-total) + 54px);}
 :where(#floatRow) > #voiceBtn.on::before{content:'●';color:#D9480F;font-size:12px;margin-right:2px;animation:wrBlink 1s steps(2) infinite;}
 
 :where(#floatRow:has(> #goBtn:not([style*="none"]))) > #voiceBtn.on::before{position:absolute;top:5px;right:7px;margin:0;}
+
+#voiceBtn{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;}
+#heardPanel{position:absolute;z-index:11;top:calc(var(--top-total) + 6px);left:max(var(--gut),var(--sa-l));width:min(440px,calc(100% - 2 * max(var(--gut),var(--sa-l))));box-sizing:border-box;
+  max-height:calc(100% - var(--top-total) - var(--tab-total) - var(--float-gap) - var(--float-h) - 18px);overflow:hidden;padding:2px 2px 8px 10px;border-radius:12px;
+  background:rgba(24,32,40,.8);color:#fff;font-size:max(13px,var(--fs-13));line-height:1.4;pointer-events:none;}
+#heardPanel .hpHead{display:flex;align-items:center;gap:6px;}
+#heardPanel .hpInfo{flex:1;min-width:0;font-weight:800;overflow-wrap:anywhere;}
+#heardPanel .hpClose{pointer-events:auto;flex:none;width:var(--tap);height:var(--tap);border:0;border-radius:50%;background:transparent;color:#fff;font-size:20px;line-height:1;cursor:pointer;}
+#heardPanel .hpList{padding-right:8px;}
+#heardPanel .hpRow{overflow-wrap:anywhere;padding:1px 0;border-top:1px solid rgba(255,255,255,.1);}
+#heardPanel .hpRow > span + span{margin-left:5px;}
+#heardPanel .hpT,#heardPanel .hpRaw,#heardPanel .hpEmpty,#heardPanel .hpReact.none{color:#A9BCCA;}
+#heardPanel .hpT{font-variant-numeric:tabular-nums;}
+#heardPanel .hpK{color:#D4DEE5;}
+#heardPanel .hpK.fin{color:#fff;font-weight:800;}
+#heardPanel .hpK.sys{color:#8FD3FF;}
+#heardPanel .hpK.err{color:#FF9C8A;font-weight:800;}
+#heardPanel .hpReact{color:#FFD86B;font-weight:800;}
+#heardPanel .hpReact.none{font-weight:400;}
 @keyframes wrBlink{to{opacity:.25}}
 
 body.sheetOn #floatRow{display:none;}
@@ -1135,7 +1154,7 @@ body.welcomeOn #mainBar .tab,body.welcomeOn #floatRow .pill,body.welcomeOn #wall
 }
 
 </style>
-  <script type="module" crossorigin src="./assets/index-DE3hfihJ.js"></script>
+  <script type="module" crossorigin src="./assets/index-BzU5rfIe.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/three-DL7X140a.js">
 </head>
 <body>
