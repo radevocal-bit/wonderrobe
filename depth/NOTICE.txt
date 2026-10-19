@@ -1,0 +1,18 @@
+わんダーローブ — 奥行きを しらべる しくみ（深度モデル）
+
+わんダーローブに同梱している 深度モデル depth-anything-v2-small-quantized.onnx は、次のモデルを そのまま入れたものです（中身は 変えていません）。
+
+  モデル    Depth Anything V2 Small
+  作者      Lihe Yang, Bingyi Kang, Zilong Huang, Zhen Zhao, Xiaogang Xu, Jiashi Feng, Hengshuang Zhao（HKU・TikTok）
+  論文      Depth Anything V2（arXiv:2406.09414）
+  元        https://huggingface.co/depth-anything/Depth-Anything-V2-Small
+            https://github.com/DepthAnything/Depth-Anything-V2
+  ONNX 版   onnx-community が ONNX に変換し uint8 に量子化したもの（onnx/model_quantized.onnx）
+            https://huggingface.co/onnx-community/depth-anything-v2-small
+            版 4472b7362082ad9968fee890ca0f1e5aca36b93d（2026-10-19 に取得）
+  大きさ    27,258,801 バイト
+  SHA-256   fcf51f1b230362b28690bb9d1809bf0431f29cad20534e3f589bd7285547f20d
+  ライセンス Apache License 2.0（本文は このあと＝同梱の LICENSE.txt）
+            Depth-Anything-V2-Small は Apache-2.0。Base／Large／Giant は CC-BY-NC-4.0 なので使っていない。
+
+推論は端末の中だけで行います（写真は外へ送りません）。
