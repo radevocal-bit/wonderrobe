@@ -1193,6 +1193,9 @@ body.sheetOpen #shopPoses .pill{pointer-events:none;}
 #panel-welcome .wCut.sel{border-color:var(--collar);box-shadow:0 0 0 3px var(--collar);}
 #panel-welcome .wCut.sel b{color:#2E8B57;}
 
+#panel-welcome .wTails{grid-template-columns:repeat(2,minmax(0,1fr));}
+#panel-welcome .wTails .wCut img{height:calc(96px * var(--zoom));}
+
 #panel-welcome .wPhotoBtn{width:100%;min-height:56px;}
 #panel-welcome .wPhotoBtn+.wDone[hidden]+.panelHead,#panel-welcome .wPhotoBtn[hidden]~.panelHead{margin-top:4px;}
 #panel-welcome .wDone{display:flex;flex-direction:column;gap:8px;align-items:stretch;font-size:var(--fs-15);font-weight:900;color:var(--ink);margin:0 2px 8px;}
@@ -1461,7 +1464,7 @@ body.guideQuiet #toast{visibility:hidden!important;}
 }
 
 </style>
-  <script type="module" crossorigin src="./assets/index-LOsHhACK.js"></script>
+  <script type="module" crossorigin src="./assets/index-z0R1ww8X.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/three-DgCLynl8.js">
 </head>
 <body>
@@ -1840,6 +1843,11 @@ body.guideQuiet #toast{visibility:hidden!important;}
             <div class="wLead">カットを えらぼう</div>
             <div class="wNote">どれも むりょう。あとで 👕 きせかえ の ✂️ カット でも かえられるよ</div>
             <div class="wCuts" id="welcomeCuts"></div>
+          </section>
+          <section class="wStep" data-step="tail" hidden>
+            <div class="wLead">しっぽを えらぼう</div>
+            <div class="wNote">どちらも むりょう。あとで 👕 きせかえ の 🐾 しっぽ でも かえられるよ</div>
+            <div class="wCuts wTails" id="welcomeTails"></div>
           </section>
           <section class="wStep" data-step="color" hidden>
             <div class="wLead">けいろを えらぼう</div>
