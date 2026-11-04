@@ -218,22 +218,75 @@ body.lookChipOn #hint,body.lookChipOn #toast{top:calc(var(--top-total) + 54px);}
 #trainBar.two button{flex:1 1 calc((100% - (var(--per,3) - 1) * 3px) / var(--per,3));}
 body.training #trainBar,body.training #trainTop{display:flex;}
 body.training.sheetOn #trainBar,body.training.sheetOn #trainTop{display:none;}
-#trainBar button{pointer-events:auto;flex:1 1 0;min-width:0;min-height:52px;padding:4px 1px 3px;border:2px solid var(--ink);border-radius:14px;background:var(--cream);color:var(--ink);
-  font-family:inherit;font-weight:800;font-size:var(--fs-13);line-height:1.15;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;position:relative;
+
+#trainBar button{pointer-events:auto;flex:1 1 0;min-width:0;min-height:56px;padding:4px 1px 4px;border:2px solid var(--ink);border-radius:14px;background:var(--cream);color:var(--ink);
+  font-family:inherit;font-weight:800;font-size:var(--fs-13);line-height:1.15;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;position:relative;
   box-shadow:0 3px 0 rgba(43,58,70,.28);white-space:nowrap;touch-action:manipulation;}
 #trainBar button:active,#trainTop button:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(43,58,70,.28);}
-#trainBar .pawrow{display:flex;align-items:center;gap:2px;line-height:1;}
-#trainBar .sg{font-size:var(--fs-13);font-weight:900;line-height:1;color:#D9701A;}
+#trainBar .nm{font-size:var(--fs-16);font-weight:900;line-height:1.15;}
+#trainBar .gs{font-size:var(--fs-13);font-weight:800;line-height:1.15;color:#8A5A2B;letter-spacing:-.02em;}
+#trainBar .dots{display:flex;gap:3px;height:12px;}
+.dots i{display:block;width:12px;height:12px;border-radius:50%;background:linear-gradient(to top,#E8702A calc(var(--f,0) * 100%),#E4DFD7 0);box-shadow:inset 0 0 0 1px rgba(43,58,70,.2);}
+.dots i.f{background:#E8702A;}
+#trainBar button.got .dots,#trainBar button.capped .dots{display:none;}
+#trainBar button.got .gs{color:#A8720C;}
+#trainBar button.capped{background:#EDEAE5;border-color:#A4ABB0;box-shadow:0 2px 0 rgba(43,58,70,.14);}
+#trainBar button.capped .nm{color:#8E969C;}
+#trainBar button.capped .gs{color:#2E8B4E;}
+#trainBar button.sel{border-color:#F07832;box-shadow:inset 0 0 0 2px #F07832,0 3px 0 rgba(240,120,50,.45);}
+#trainBar button.glow{animation:trainGlow 1.1s ease-in-out 2;}
+@keyframes trainGlow{0%,100%{background:var(--cream);}50%{background:#FFE0B8;}}
 .tpaws{display:inline-flex;gap:2px;height:10px;vertical-align:middle;}
 .tpaws i{width:10px;height:10px;background:currentColor;opacity:.3;-webkit-mask:var(--paw) center/contain no-repeat;mask:var(--paw) center/contain no-repeat;}
 .tpaws i.on{opacity:1;color:#E0812A;}
 .tpaws.got i{opacity:1;color:#D9971A;}
 #trainBar button.got{border-color:#E0A82A;background:#FFF1C9;}
 #trainBar button.yoshi,#trainBar button.asYoshi{background:#EAF6E4;}
-#trainBar .sub{font-size:var(--fs-13);font-weight:700;opacity:.7;}
+#trainBar .sub{font-size:var(--fs-13);font-weight:800;line-height:1.15;color:#2E7D46;letter-spacing:-.02em;}
 #trainTop{justify-content:flex-start;align-items:center;}
 #trainTop button{pointer-events:auto;min-height:var(--tap);border:2px solid var(--ink);border-radius:999px;background:var(--cream);color:var(--ink);font-family:inherit;font-weight:800;
   font-size:var(--fs-13);padding:0 14px;box-shadow:0 3px 0 rgba(43,58,70,.28);touch-action:manipulation;-webkit-touch-callout:none;}
+
+#trainTop #trainHelpBtn{margin-left:auto;border-color:#F07832;color:#D9601A;background:#fff;font-size:var(--fs-16);}
+
+#trainGuide{position:absolute;left:max(var(--gut),var(--sa-l));right:max(var(--gut),var(--sa-r));top:calc(var(--top-total) + 6px);z-index:12;display:none;
+  background:rgba(255,255,255,.97);color:var(--ink);border:3px solid #F07832;border-radius:18px;padding:7px 12px 8px;box-shadow:0 4px 12px rgba(0,0,0,.16);
+  font-weight:800;line-height:1.3;word-break:keep-all;overflow-wrap:anywhere;-webkit-user-select:none;user-select:none;}
+body.training #trainGuide{display:block;}
+body.training.sheetOn #trainGuide{display:none;}
+#trainGuide .gH{font-size:calc(20px * var(--zoom));font-weight:900;}
+#trainGuide[data-kind=steps] .gH,#trainGuide[data-kind=capped] .gH,#trainGuide[data-kind=done] .gH{color:#E0702A;}
+#trainGuide[data-kind=won] .gH,#trainGuide[data-kind=praised] .gH,#trainGuide[data-kind=learned] .gH,#trainGuide[data-kind=all] .gH{color:#2E8B4E;}
+#trainGuide .gS{font-size:calc(20px * var(--zoom));}
+#trainGuide .gS.sm{font-size:var(--fs-16);font-weight:700;color:#5A6670;}
+#trainGuide .ok{font-size:var(--fs-16);font-weight:700;color:#5A6670;white-space:nowrap;}
+#trainGuide .gN{font-size:var(--fs-16);font-weight:700;color:#5A6670;}
+#trainGuide .gS.flash{animation:guideFlash .8s ease-in-out 3;border-radius:8px;}
+@keyframes guideFlash{50%{background:#FFE3B5;}}
+#trainGuide .dots{display:inline-flex;vertical-align:-1px;}
+
+@media (max-height:700px){
+  #trainGuide{padding:5px 10px 6px;border-width:2px;}
+  #trainGuide .gH,#trainGuide .gS,#trainGuide .gN,#trainGuide .gS.sm,#trainGuide .ok{font-size:var(--fs-16);}
+}
+@media (max-height:700px) and (orientation:portrait){
+  
+  #trainGuide{top:calc(var(--top-total) + 4px);padding:4px 10px 5px;line-height:1.2;}
+}
+@media (orientation:landscape) and (max-height:520px){
+  #trainGuide{right:auto;width:300px;max-width:calc(100% - 2 * max(var(--gut),var(--sa-l)));}
+}
+
+#trainGuide.underToast{visibility:hidden;}
+
+#panel-trainhelp{word-break:keep-all;overflow-wrap:anywhere;}
+#panel-trainhelp .thLead{font-size:var(--fs-16);font-weight:900;color:var(--ink);margin:2px 2px 10px;line-height:1.4;}
+#panel-trainhelp .thList{display:grid;grid-template-columns:auto 1fr;gap:10px 12px;margin:0 2px 12px;font-size:var(--fs-16);line-height:1.35;color:var(--ink);}
+#panel-trainhelp dt{font-weight:900;white-space:nowrap;}
+#panel-trainhelp dd{margin:0;font-weight:700;}
+#panel-trainhelp .thNote{font-size:var(--fs-16);font-weight:900;color:#C9601F;margin:2px 2px 6px;line-height:1.4;}
+
+#panel-trainhelp .thNote + .thLead{margin-top:12px;}
 #askSkillRow .tpaws{margin-left:4px;}
 #trainStartBtn{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;}
 #trainFx{position:fixed;inset:0;pointer-events:none;z-index:9;overflow:hidden;}
@@ -245,6 +298,26 @@ body.training.sheetOn #trainBar,body.training.sheetOn #trainTop{display:none;}
 #trainFx .palm{position:absolute;margin:-18px 0 0 -18px;font-size:30px;line-height:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5));}
 #trainFx .hand{position:absolute;margin:-58px 0 0 -18px;font-size:28px;line-height:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5));}
 #trainFx .hand u{position:absolute;left:2px;right:2px;bottom:-8px;height:4px;border-radius:2px;background:rgba(255,255,255,.9);transform-origin:left;text-decoration:none;}
+
+#trainFx .demo{position:absolute;width:0;height:0;pointer-events:none;}
+#trainFx .demo i{position:absolute;display:block;box-sizing:border-box;}
+#trainFx .demo .dot{left:-17px;top:-17px;width:34px;height:34px;border-radius:50%;background:#fff;border:5px solid #FF8C3C;box-shadow:0 2px 6px rgba(0,0,0,.3);}
+#trainFx .demo.slide .line{left:-6px;top:0;width:12px;height:var(--len,140px);border-radius:6px;background:rgba(255,140,60,.92);transform-origin:top;animation:demoLine 1.9s ease-in-out 2 both;}
+#trainFx .demo.slide .arrow{left:-24px;top:calc(var(--len,140px) - 6px);width:0;height:0;border-left:24px solid transparent;border-right:24px solid transparent;border-top:34px solid rgba(255,140,60,.95);animation:demoArrow 1.9s ease-in-out 2 both;}
+#trainFx .demo.slide .dot{animation:demoSlide 1.9s ease-in-out 2 both;}
+@keyframes demoSlide{0%{transform:translateY(0);opacity:0}10%{transform:translateY(0);opacity:1}70%{transform:translateY(var(--len,140px));opacity:1}85%,100%{transform:translateY(var(--len,140px));opacity:0}}
+@keyframes demoLine{0%{transform:scaleY(0);opacity:0}10%{transform:scaleY(0);opacity:1}70%{transform:scaleY(1);opacity:1}85%,100%{transform:scaleY(1);opacity:0}}
+@keyframes demoArrow{0%,55%{opacity:0}68%,80%{opacity:1}92%,100%{opacity:0}}
+#trainFx .demo.hold .ring{left:-40px;top:-40px;width:80px;height:80px;border-radius:50%;border:7px solid rgba(255,140,60,.95);animation:demoHold 2.2s ease-in-out 2 both;}
+#trainFx .demo.hold .dot{animation:demoPress 2.2s ease-in-out 2 both;}
+@keyframes demoHold{0%,8%{transform:scale(1.5);opacity:0}20%{transform:scale(1.1);opacity:.5}70%{transform:scale(.62);opacity:1}86%,100%{transform:scale(.62);opacity:0}}
+@keyframes demoPress{0%{transform:scale(1.25);opacity:0}10%{transform:scale(1);opacity:1}70%{transform:scale(.88);opacity:1}86%,100%{transform:scale(.88);opacity:0}}
+#trainFx .demo .wave{left:-32px;top:-32px;width:64px;height:64px;border-radius:50%;border:5px solid rgba(255,140,60,.95);animation:demoWave 1.5s ease-out 2 both;}
+#trainFx .demo.tap .dot,#trainFx .demo.twotap .dot{animation:demoTap 1.5s ease-out 2 both;}
+#trainFx .demo.twotap .a{margin-left:calc(var(--gap,48px) / -2);}
+#trainFx .demo.twotap .b{margin-left:calc(var(--gap,48px) / 2);}
+@keyframes demoWave{0%,12%{transform:scale(.45);opacity:0}20%{opacity:1}75%,100%{transform:scale(1.7);opacity:0}}
+@keyframes demoTap{0%{transform:scale(1.35);opacity:0}12%{transform:scale(1);opacity:1}45%{opacity:1}65%,100%{opacity:0}}
 #trainPanel{position:fixed;left:max(var(--gut),var(--sa-l));right:max(var(--gut),var(--sa-r));top:calc(var(--top-total) + 6px);z-index:35;max-height:44dvh;overflow:auto;display:none;
   background:rgba(255,249,239,.96);color:var(--ink);border:2px solid var(--ink);border-radius:16px;padding:8px 12px 10px;font-size:var(--fs-13);box-shadow:0 6px 18px rgba(0,0,0,.25);}
 body.training #trainPanel.open{display:block;}
@@ -722,6 +795,12 @@ body.sheetOpen #shopPoses .pill{pointer-events:none;}
 #shop.band .shopCard.cutCard b{min-height:0;}
 
 .shopCard.cutCard .price.now{color:#fff;background:#2E8B57;border-radius:999px;align-self:flex-start;margin:2px 8px 8px;padding:1px 8px;}
+
+.shopCard.shopWait{border-color:var(--collar);background:#FFF8F1;}
+.shopWait .wHead{font-size:calc(13.5px * var(--zoom));font-weight:900;line-height:1.3;padding:6px 6px 0;white-space:nowrap;}
+.shopWait .wNote{font-size:var(--fs-13);font-weight:700;line-height:1.3;color:#6B7A86;padding:2px 6px 4px;white-space:nowrap;}
+.shopWait .wGo{display:flex;align-items:center;justify-content:center;margin:auto 6px 8px;padding:4px;border-radius:999px;background:var(--collar);color:#fff;font-size:var(--fs-13);font-weight:900;line-height:1.2;white-space:nowrap;box-shadow:0 2px 0 #D45A1F;}
+#shop.band .shopCard.shopWait{flex:0 0 calc(104px * var(--zoom));align-self:stretch;}
 
 #shop.band #shopBuyBar{position:absolute;grid-column:auto;grid-row:auto;right:4px;bottom:calc(100% + 10px);flex-direction:row;align-items:center;justify-content:flex-end;gap:6px;padding:0;border:0;background:none;min-width:0;max-width:calc(100% - 8px);z-index:3;pointer-events:none;}
 #shop.band #shopBuyBar > *{pointer-events:auto;}
@@ -1464,7 +1543,7 @@ body.guideQuiet #toast{visibility:hidden!important;}
 }
 
 </style>
-  <script type="module" crossorigin src="./assets/index-DgeFfXH1.js"></script>
+  <script type="module" crossorigin src="./assets/index-DA1svFOp.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/three-DgCLynl8.js">
 </head>
 <body>
@@ -1809,6 +1888,8 @@ body.guideQuiet #toast{visibility:hidden!important;}
         <div id="zukanGrid"></div>
       </div>
       
+      <div class="page panel col" id="panel-trainhelp"></div>
+      
       <div class="page panel col" id="panel-room">
         <div id="netSheetBody"></div>
       </div>
@@ -1851,7 +1932,8 @@ body.guideQuiet #toast{visibility:hidden!important;}
           </section>
           <section class="wStep" data-step="color" hidden>
             <div class="wLead">けいろを えらぼう</div>
-            <div class="wNote">しゃしんは この スマホの なかだけで みるよ。あとから かえられる</div>
+            
+            <div class="wNote" id="welcomeColorNote">あとで 🐶 うちの子 の みため でも かえられるよ</div>
             
             <button class="pill hero wPhotoBtn" id="welcomePhotoBtn" type="button">📷 しゃしんから つくる</button>
             
@@ -1863,7 +1945,7 @@ body.guideQuiet #toast{visibility:hidden!important;}
                 <button class="pill" id="welcomePhotoCut" type="button" hidden>✂️ カットを えらぶ</button>
               </div>
             </div>
-            <div class="panelHead">または いろを えらぶ</div>
+            <div class="panelHead" id="welcomePalHead">または いろを えらぶ</div>
             <div class="wPalettes" id="welcomePalettes"></div>
             <button class="wMoreBtn" id="welcomeMoreBtn" type="button" aria-expanded="false" aria-controls="welcomeMore">もっと こまかく ▾</button>
             <div id="welcomeMore" hidden>
