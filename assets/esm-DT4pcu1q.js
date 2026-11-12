@@ -1,0 +1,2 @@
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["./web-Cjp50lyF.js","./index-hkyOA5ia.js","./three-CzjsBGGt.js"])))=>i.map(i=>d[i]);
+import{O as e,p as t}from"./index-hkyOA5ia.js";var n=t(`SpeechRecognition`,{web:()=>e(()=>import(`./web-Cjp50lyF.js`).then(e=>new e.SpeechRecognitionWeb),__vite__mapDeps([0,1,2]),import.meta.url)});export{n as SpeechRecognition};

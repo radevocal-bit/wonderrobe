@@ -580,6 +580,11 @@ body.sheetOn #floatRow{display:none;}
 #memOverlay .memTag.mile{background:#E0A100;}
 #memOverlay .memTag.start{background:#5CA96C;}
 
+#memOverlay .memTag.outing{background:var(--ink);}
+
+#memOverlay .memCell .bd .memTag.outing{white-space:nowrap;}
+#memOverlay .memTag.outing.short .ic{display:none;}
+
 #memBig{position:absolute;inset:0;z-index:2;background:rgba(43,58,70,.6);display:none;align-items:center;justify-content:center;padding:16px;}
 #memBig.open{display:flex;}
 #memBigCard{position:relative;background:var(--cream);border:2px solid var(--ink);border-radius:20px;padding:12px;width:100%;max-width:440px;
@@ -587,6 +592,8 @@ body.sheetOn #floatRow{display:none;}
 #memBigPic{display:flex;align-items:center;justify-content:center;}
 #memBigPic img{display:block;width:100%;aspect-ratio:1;max-height:calc(100dvh - 250px);object-fit:cover;border-radius:14px;background:#fff;}
 #memBigPic img.card{aspect-ratio:auto;object-fit:contain;max-height:calc(100dvh - 250px);width:auto;max-width:100%;}
+
+#memBigPic img.wide{aspect-ratio:4/3;object-fit:contain;width:auto;max-width:100%;max-height:calc(100dvh - 250px);}
 #memBigPic.word{height:min(40vw,170px);border-radius:14px;background:#FFF0C2;font-size:64px;}
 #memBigPic.word.start{background:#E3F2E1;}
 #memBigPic.word.bond{background:#EAF4FB;}
@@ -605,6 +612,8 @@ body.sheetOn #floatRow{display:none;}
   #memBigCard{display:flex;gap:12px;align-items:center;max-width:720px;}
   #memBigPic{flex:none;}
   #memBigPic img,#memBigPic img.card{height:calc(100dvh - 64px);max-height:none;width:auto;}
+  
+  #memBigPic img.wide{width:min(364px,calc((100dvh - 64px) * 4 / 3));height:auto;max-height:none;}
   #memBigPic.word{width:calc(100dvh - 64px);height:calc(100dvh - 64px);}
   #memBigInfo{flex:1;min-width:0;padding-right:40px;}   
 }
@@ -1238,6 +1247,16 @@ body.sheetOpen #shopPoses .pill{pointer-events:none;}
 #rusuPaperCard.wide .rpList{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;}
 #rusuPaperCard.scroll .rpBtns{position:sticky;bottom:0;z-index:1;background:var(--cream);margin-top:6px;padding:8px 0;box-shadow:0 -6px 8px -6px rgba(43,58,70,.25);}
 
+#rusuPaperCard .rpPhoto{position:relative;box-sizing:border-box;margin:0 0 10px;border:2px solid var(--ink);border-radius:14px;overflow:hidden;aspect-ratio:4/3;background:#d3e3f0;pointer-events:none;}
+#rusuPaperCard .rpPhoto img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 57%;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
+#rusuPaperCard .rpPhoto.low{aspect-ratio:auto;}
+#rusuPaperCard .rpList.listScroll{overflow-y:auto;overscroll-behavior:contain;}
+#rusuPaperCard.side{display:grid;grid-template-columns:minmax(0,46%) minmax(0,1fr);column-gap:14px;align-items:start;width:min(640px,calc(100% - 24px));}
+#rusuPaperCard.side > *{grid-column:2;}
+#rusuPaperCard.side > .rpPhoto{grid-column:1;grid-row:1 / span 6;margin:0;}
+#rusuPaperCard.cscroll{max-height:var(--rp-max,none);overflow-y:auto;overscroll-behavior:contain;}
+#rusuPaperCard.cscroll .rpBtns{position:sticky;bottom:-14px;z-index:1;background:var(--cream);margin-top:6px;padding:8px 0 14px;box-shadow:0 -6px 8px -6px rgba(43,58,70,.25);}
+
 #nameCard,#rusuPaperCard,#netSheetBody,.pcard .pcOwner,.pcard .pcReasons,.pcard .pcStamp{word-break:keep-all;overflow-wrap:anywhere;}
 #cardWrap{position:absolute;left:0;top:0;display:flex;flex-direction:column;align-items:center;gap:14px;transform-origin:0 0;}
 .pcard{--f:#FFB34D;width:272px;background:var(--f);border:3px solid var(--ink);border-radius:20px;padding:9px;box-shadow:0 6px 0 rgba(43,58,70,.3);color:var(--ink);text-align:left;}
@@ -1407,6 +1426,24 @@ body.sheetOpen #shopPoses .pill{pointer-events:none;}
 .stampBub.below i,.stampBub.over i{left:calc(var(--tail,50%) - 6.5px);top:-8.5px;border-left-width:2.5px;border-top-width:2.5px;}
 .stampBub.right i{top:calc(var(--tail,50%) - 6.5px);left:-8.5px;border-left-width:2.5px;border-bottom-width:2.5px;}
 .stampBub.left i{top:calc(var(--tail,50%) - 6.5px);right:-8.5px;border-right-width:2.5px;border-top-width:2.5px;}
+
+#nudgeLayer{position:absolute;inset:0;z-index:10;pointer-events:none;overflow:hidden;}
+#nudgeLayer.model{z-index:30;}
+.nudgeBub{position:absolute;left:0;top:0;box-sizing:border-box;display:flex;align-items:center;width:max-content;min-height:46px;margin:0;
+  background:var(--cream);color:var(--ink);border:2.5px solid var(--ink);border-radius:18px;padding:7px 14px;font:inherit;text-align:left;
+  box-shadow:0 3px 0 rgba(43,58,70,.25);opacity:0;visibility:hidden;pointer-events:none;will-change:transform,opacity;
+  transition:opacity .25s,visibility .25s;-webkit-tap-highlight-color:transparent;}
+.nudgeBub.on{opacity:1;visibility:visible;}
+#nudgeBubble.on{pointer-events:auto;cursor:pointer;}
+.nudgeBub .nb1{display:flex;align-items:center;gap:6px;font-size:18px;font-weight:900;line-height:1.3;white-space:nowrap;letter-spacing:0;}
+.nudgeBub.narrow .nb1{font-size:17px;gap:4px;}
+.nudgeBub .ic{font-size:1.1em;line-height:1;}
+.nudgeBub .go{opacity:.55;font-size:1.2em;line-height:1;margin-left:2px;}
+.nudgeBub i{position:absolute;width:13px;height:13px;background:var(--cream);border:0 solid var(--ink);box-sizing:border-box;transform:rotate(45deg);}
+.nudgeBub.above i{left:calc(var(--tail,50%) - 6.5px);bottom:-8.5px;border-right-width:2.5px;border-bottom-width:2.5px;}
+.nudgeBub.below i,.nudgeBub.over i{left:calc(var(--tail,50%) - 6.5px);top:-8.5px;border-left-width:2.5px;border-top-width:2.5px;}
+.nudgeBub.right i{top:calc(var(--tail,50%) - 6.5px);left:-8.5px;border-left-width:2.5px;border-bottom-width:2.5px;}
+.nudgeBub.left i{top:calc(var(--tail,50%) - 6.5px);right:-8.5px;border-right-width:2.5px;border-top-width:2.5px;}
 
 
 #netAsk{position:absolute;left:max(var(--gut),var(--sa-l));right:max(var(--gut),var(--sa-r));margin:0 auto;width:fit-content;max-width:440px;top:calc(var(--top-total) + 48px);z-index:28;display:none;align-items:center;gap:10px;
@@ -1766,8 +1803,8 @@ body.guideQuiet #toast{visibility:hidden!important;}
 }
 
 </style>
-  <script type="module" crossorigin src="./assets/index-BL-8DTKi.js"></script>
-  <link rel="modulepreload" crossorigin href="./assets/three-DgCLynl8.js">
+  <script type="module" crossorigin src="./assets/index-hkyOA5ia.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/three-CzjsBGGt.js">
 </head>
 <body>
 <div id="app">
@@ -1949,6 +1986,7 @@ body.guideQuiet #toast{visibility:hidden!important;}
         <button class="pill" data-slot="body" data-item="warmerHeartDots">💛 着る腹巻 ハートと水玉</button>
         <button class="pill" data-slot="body" data-item="knitSuit">🧥 前後袖つきニット</button>
         <button class="pill" data-slot="body" data-item="knitSuitSun">☀️ 前後袖つきニット 太陽</button>
+        <button class="pill" data-slot="body" data-item="tankDog">🎽 タンクトップ DOG</button>
       </div>
       
       
