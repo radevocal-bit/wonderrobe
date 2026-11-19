@@ -1,6 +1,6 @@
-わんダーローブ — 奥行きを しらべる しくみ（深度モデル）
+わんにゃ〜ご〜 — 奥行きを しらべる しくみ（深度モデル）
 
-わんダーローブに同梱している 深度モデル depth-anything-v2-small-quantized.onnx は、次のモデルを そのまま入れたものです（中身は 変えていません）。
+わんにゃ〜ご〜に同梱している 深度モデル depth-anything-v2-small-quantized.onnx は、次のモデルを そのまま入れたものです（中身は 変えていません）。
 
   モデル    Depth Anything V2 Small
   作者      Lihe Yang, Bingyi Kang, Zilong Huang, Zhen Zhao, Xiaogang Xu, Jiashi Feng, Hengshuang Zhao（HKU・TikTok）
