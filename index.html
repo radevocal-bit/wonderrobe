@@ -1566,6 +1566,24 @@ body.sheetOpen #shopPoses .pill{pointer-events:none;}
 .trickBtn b{font-size:12px;font-weight:900;line-height:1.15;white-space:nowrap;letter-spacing:-.3px;}
 .trickBtn:active{filter:brightness(.92);}
 
+.trickBtn.lv{position:relative;}
+#trickRing[data-meter="ring"] .trickBtn.lv .tpaws,#trickRing[data-meter="fill"] .trickBtn.lv .tpaws{display:none;}
+#trickRing[data-meter="ring"] .trickBtn.lv::before{content:"";position:absolute;inset:-3px;border-radius:50%;pointer-events:none;
+  background:conic-gradient(#FF8A3D calc(var(--lv,0) * 360deg),rgba(43,58,70,.18) 0);
+  -webkit-mask:radial-gradient(circle,transparent 63%,#000 64%);mask:radial-gradient(circle,transparent 63%,#000 64%);}
+#trickRing[data-meter="ring"] .trickBtn.got::before{background:conic-gradient(#F2C14E,#D9971A,#F7D774,#D9971A,#F2C14E);}
+#trickRing[data-meter="paws"] .trickBtn.lv .tpaws{height:12px;gap:1px;margin:0 0 2px;}
+#trickRing[data-meter="paws"] .trickBtn.lv .tpaws i{width:12px;height:12px;}
+#trickRing[data-meter="paws"] .trickBtn.lv{gap:0;padding-top:2px;}
+#trickRing[data-meter="paws"] .trickBtn.lv > i{height:21px;}
+#trickRing[data-meter="paws"] .trickBtn.lv > i svg{width:21px;height:21px;}
+#trickRing[data-meter="paws"] .trickBtn.lv .tpaws i{opacity:1;background:linear-gradient(to top,#E0812A calc(var(--f,0) * 100%),rgba(43,58,70,.2) 0);}
+#trickRing[data-meter="paws"] .trickBtn.got .tpaws i{background:#D9971A;}
+#trickRing[data-meter="fill"] .trickBtn.lv{background:linear-gradient(to top,#FFD3A8 calc(var(--lv,0) * 100%),var(--cream) 0);}
+#trickRing[data-meter="fill"] .trickBtn.got{background:linear-gradient(to top,#F7D774,#F2C14E);}
+#trickRing:not([data-meter="old"]) .trickBtn.got{border-color:#D9971A;}
+#trickRing:not([data-meter="old"]) .trickBtn.got::after{content:"✨";position:absolute;right:-6px;top:-8px;font-size:16px;line-height:1;pointer-events:none;}
+
 .trickBlock.teach .trickBtn:disabled{opacity:.32;pointer-events:none;}
 .trickBlock.teach .trickBtn.hero{border-color:#FF8A3D;box-shadow:0 0 0 4px rgba(255,138,61,.35),0 4px 12px rgba(0,0,0,.2);animation:trickHero 1s ease-in-out infinite;}
 
@@ -1956,7 +1974,7 @@ body.guideQuiet #toast{visibility:hidden!important;}
 #treatBtn .snackN{display:inline-block;min-width:20px;margin-left:4px;padding:0 5px;border-radius:999px;background:#E2483D;color:#fff;font-size:13px;font-weight:800;line-height:20px;text-align:center;vertical-align:middle;}
 #treatBtn .snackN.zero{background:#B8ADA2;}
 </style>
-  <script type="module" crossorigin src="./assets/index-D6a-HCx_.js"></script>
+  <script type="module" crossorigin src="./assets/index-CAvO-gzA.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/three-C1gisD2E.js">
 </head>
 <body>
