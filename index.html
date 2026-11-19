@@ -69,6 +69,16 @@ canvas{display:block;}
   background:var(--cream);border:2px solid var(--ink);box-shadow:0 2px 0 rgba(43,58,70,.25);font-family:inherit;font-weight:900;
   font-size:calc(var(--fs-15) * var(--fit,1));color:var(--ink);max-width:100%;cursor:pointer;}
 #leadChip[hidden]{display:none;}
+#bondPaws{pointer-events:auto;display:flex;gap:3px;margin:-2px 0 0 4px;padding:1px 8px;min-height:26px;align-items:center;border-radius:999px;border:2px solid #F0DCC0;background:rgba(255,250,242,.92);font-size:15px;line-height:1;cursor:pointer;}
+#bondPaws[hidden]{display:none;}
+
+@media (orientation:portrait){body.bondPawsOn{--toastDrop:38px;}}
+#bondPaws .off{opacity:.22;filter:grayscale(1);}
+#bondPaws .pop{animation:bondPop .7s ease-out;}
+@keyframes bondPop{0%{transform:scale(0);}60%{transform:scale(1.6);}100%{transform:scale(1);}}
+#bondPop{pointer-events:auto;display:flex;flex-direction:column;gap:2px;max-width:min(260px,calc(100vw - 32px));padding:8px 12px;border-radius:14px;background:#fff;border:2px solid #F0DCC0;box-shadow:0 3px 10px rgba(0,0,0,.18);color:var(--ink);font-size:15px;font-weight:700;line-height:1.4;word-break:keep-all;}
+#bondPop[hidden]{display:none;}
+#bondPop b{color:#C2602C;font-size:16px;font-weight:900;}
 #leadChip .dogDot{width:40px;height:40px;border-radius:50%;border:2px solid var(--ink);flex:none;box-shadow:none;}
 #leadChip .name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:calc(var(--fs-15) * var(--fit,1));}   
 
@@ -196,7 +206,7 @@ body.lookChipOn #hint,body.lookChipOn #toast{top:calc(var(--top-total) + 54px);}
 }
 @media (orientation:portrait) and (max-height:600px){
   body.sheetOn #trimChip{display:none!important;}
-  body.lookChipOn.sheetOn #hint{top:calc(var(--top-total) + 8px);}
+  body.lookChipOn.sheetOn #hint{top:calc(var(--top-total) + var(--toastDrop,8px));}
 }
 
 
@@ -209,7 +219,7 @@ body.lookChipOn #hint,body.lookChipOn #toast{top:calc(var(--top-total) + 54px);}
 #app.dogrun #hint{display:none;}
 
 
-#hint{position:absolute;top:calc(var(--top-total) + 8px);left:50%;transform:translateX(-50%);background:rgba(43,58,70,.82);color:#fff;font-size:calc(14px * var(--zoom));font-weight:800;padding:8px 14px;border-radius:16px;z-index:10;
+#hint{position:absolute;top:calc(var(--top-total) + var(--toastDrop,8px));left:50%;transform:translateX(-50%);background:rgba(43,58,70,.82);color:#fff;font-size:calc(14px * var(--zoom));font-weight:800;padding:8px 14px;border-radius:16px;z-index:10;
   width:max-content;max-width:calc(100% - 24px);text-align:center;line-height:1.35;word-break:keep-all;overflow-wrap:anywhere;transition:opacity .4s;pointer-events:none;}
 
 #hint.lickHold,#toast.lickHold{visibility:hidden;opacity:0!important;transition:none;}
@@ -1613,7 +1623,7 @@ body.sheetOpen #shopPoses .pill{pointer-events:none;}
 .netErr{color:#c94a2e;font-weight:800;font-size:var(--fs-13);text-align:center;min-height:19px;margin:2px 0 10px;}
 
 
-#toast{position:absolute;left:50%;top:calc(var(--top-total) + 8px);transform:translateX(-50%);background:var(--ink);color:#fff;font-weight:800;font-size:var(--fs-13);padding:10px 16px;border-radius:14px;opacity:0;transition:opacity .25s;z-index:40;pointer-events:none;width:max-content;max-width:calc(100% - 32px);text-align:center;line-height:1.35;word-break:keep-all;overflow-wrap:anywhere;}
+#toast{position:absolute;left:50%;top:calc(var(--top-total) + var(--toastDrop,8px));transform:translateX(-50%);background:var(--ink);color:#fff;font-weight:800;font-size:var(--fs-13);padding:10px 16px;border-radius:14px;opacity:0;transition:opacity .25s;z-index:40;pointer-events:none;width:max-content;max-width:calc(100% - 32px);text-align:center;line-height:1.35;word-break:keep-all;overflow-wrap:anywhere;}
 
 
 #toast.hasAct{display:flex;align-items:center;gap:10px;padding:4px 6px 4px 16px;}
@@ -1830,7 +1840,7 @@ body.guideQuiet #toast{visibility:hidden!important;}
 #frisbeeUi.on{display:block;}
 
 
-#app.frisbee #leadChip{display:none;}
+#app.frisbee #leadChip,#app.frisbee #bondPaws{display:none;}
 #app.frisbee #hint{display:none;}
 
 #frisbeeTop{
@@ -1938,11 +1948,15 @@ body.guideQuiet #toast{visibility:hidden!important;}
 #snackPick{position:absolute;left:50%;bottom:calc(var(--sa-b,0px) + 150px);transform:translateX(-50%);z-index:60;display:flex;gap:14px;padding:10px 14px;border-radius:22px;background:#FFF8EE;border:2px solid #CDBFAE;box-shadow:0 4px 14px rgba(0,0,0,.18);}
 #snackPick button{display:flex;align-items:center;gap:6px;min-width:84px;min-height:56px;justify-content:center;border-radius:16px;border:2px solid #CDBFAE;background:#fff;font-size:30px;color:var(--ink);}
 #snackPick button i{font-style:normal;}
+#snackPick.ask{flex-wrap:wrap;justify-content:center;width:min(340px,calc(100vw - 32px));box-sizing:border-box;}
+#snackPick .snackQ{flex:1 0 100%;text-align:center;font-size:18px;font-weight:900;color:var(--ink);line-height:1.4;word-break:keep-all;}
+#snackPick button.snackYes,#snackPick button.snackNo{font-size:18px;font-weight:900;min-width:110px;}
+#snackPick button.snackYes{background:#FF8A3D;border-color:#E06A1D;color:#fff;}
 #snackPick button b{font-size:20px;font-weight:800;}
 #treatBtn .snackN{display:inline-block;min-width:20px;margin-left:4px;padding:0 5px;border-radius:999px;background:#E2483D;color:#fff;font-size:13px;font-weight:800;line-height:20px;text-align:center;vertical-align:middle;}
 #treatBtn .snackN.zero{background:#B8ADA2;}
 </style>
-  <script type="module" crossorigin src="./assets/index-BwiC9MsV.js"></script>
+  <script type="module" crossorigin src="./assets/index-D6a-HCx_.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/three-C1gisD2E.js">
 </head>
 <body>
@@ -1953,6 +1967,9 @@ body.guideQuiet #toast{visibility:hidden!important;}
     <div id="leftTop">
       
       <button id="leadChip" aria-haspopup="dialog" aria-label="うちの子を えらぶ"><span class="dogDot"></span><span class="name" id="leadName">うちの子</span><span class="mark swap" hidden></span><span class="mark room" hidden></span><span class="caret">▾</span></button>
+      
+      <button type="button" id="bondPaws" hidden></button>
+      <div id="bondPop" role="status" hidden></div>
     </div>
     
     <div id="walletRow">
