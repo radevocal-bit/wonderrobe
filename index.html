@@ -401,6 +401,9 @@ body.training #trainPanel.open{display:block;}
 #floatRow.foodPair.foodTight #goBtn:active{transform:translateX(6px) translateY(2px);}
 #floatRow.foodPair.foodStack #iikoBtn{right:auto;left:50%;transform:translateX(-50%);top:calc(-1 * (var(--float-h) + 12px));}
 #floatRow.foodPair.foodStack #iikoBtn:active{transform:translateX(-50%) translateY(2px);}
+
+@media not ((orientation:landscape) and (max-height:520px)){#floatRow.praiseOnly #iikoBtn{right:auto;left:50%;transform:translateX(-50%);top:calc(-1 * (var(--float-h) + 12px));}
+#floatRow.praiseOnly #iikoBtn:active{transform:translateX(-50%) translateY(2px);}}
 #floatRow.foodPair.foodStack #goBtn{transform:translateX(-50%);}
 #floatRow.foodPair.foodStack #goBtn:active{transform:translateX(-50%) translateY(2px);}
 
@@ -759,7 +762,7 @@ body.kbd #drawer .sheetBody{padding-bottom:60vh;}
 
 .sheetClose::after,.sheetBack::after{content:'';position:absolute;inset:-6px;}
 
-.sheetBody{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:10px 12px 12px;touch-action:pan-y;
+.sheetBody{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:10px 12px 12px;touch-action:pan-y;scroll-padding-bottom:calc(12px + var(--sa-b));
   background:
     linear-gradient(var(--cream) 40%, rgba(255,249,239,0)) top / 100% 16px no-repeat local,
     linear-gradient(rgba(255,249,239,0), var(--cream) 60%) bottom / 100% 16px no-repeat local,
@@ -1553,8 +1556,8 @@ body.sheetOpen #shopPoses .pill{pointer-events:none;}
 .trickBlock{position:absolute;left:0;top:0;display:flex;flex-direction:column;align-items:center;gap:5px;pointer-events:none;}
 .trickTag{box-sizing:border-box;max-width:100%;padding:3px 12px;border-radius:999px;background:var(--ink);color:#fff;font-size:13px;font-weight:900;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 #trickRing.all .trickTag{background:var(--collar);}
-.trickGrid{display:grid;grid-template-columns:repeat(var(--cols,3),62px);gap:6px;}
-.trickBtn{box-sizing:border-box;width:62px;height:62px;margin:0;padding:0;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+.trickGrid{display:grid;grid-template-columns:repeat(var(--cols,3),66px);gap:5px;}
+.trickBtn{box-sizing:border-box;width:66px;height:66px;margin:0;padding:0;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
   background:var(--cream);color:var(--ink);border:2.5px solid var(--ink);box-shadow:0 3px 0 rgba(43,58,70,.25);font:inherit;pointer-events:auto;cursor:pointer;
   -webkit-tap-highlight-color:transparent;}
 #trickRing.all .trickBtn{border-color:var(--collar);}
@@ -1563,7 +1566,7 @@ body.sheetOpen #shopPoses .pill{pointer-events:none;}
 .trickBtn .tpaws i{width:9px;height:9px;font-size:0;display:block;}
 .trickBtn i svg{width:24px;height:24px;}
 .trickBtn i svg{display:block;}
-.trickBtn b{font-size:12px;font-weight:900;line-height:1.15;white-space:nowrap;letter-spacing:-.3px;}
+.trickBtn b{font-size:12px;font-weight:900;line-height:1.15;white-space:nowrap;letter-spacing:-.4px;}
 .trickBtn:active{filter:brightness(.92);}
 
 .trickBtn.lv{position:relative;}
@@ -1974,7 +1977,7 @@ body.guideQuiet #toast{visibility:hidden!important;}
 #treatBtn .snackN{display:inline-block;min-width:20px;margin-left:4px;padding:0 5px;border-radius:999px;background:#E2483D;color:#fff;font-size:13px;font-weight:800;line-height:20px;text-align:center;vertical-align:middle;}
 #treatBtn .snackN.zero{background:#B8ADA2;}
 </style>
-  <script type="module" crossorigin src="./assets/index-CAvO-gzA.js"></script>
+  <script type="module" crossorigin src="./assets/index-DI1Ak2nB.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/three-C1gisD2E.js">
 </head>
 <body>
@@ -2276,6 +2279,7 @@ body.guideQuiet #toast{visibility:hidden!important;}
           <div class="row" id="dogrunChoiceRow" style="display:none">
             <button class="pill wide" id="parkGoBtn">🌳 ひとりで（公園）</button>
             <button class="pill wide" id="roomBtn">👥 ともだちと（番号で入る）</button>
+            <button class="pill wide" id="raceGoBtn">🏁 よびもどしレース</button>
           </div>
         </div>
         <div class="panelHead">ともだち・みつけもの</div>
