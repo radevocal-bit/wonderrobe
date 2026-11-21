@@ -188,6 +188,8 @@ body.welcomeOn #boneChip,body.welcomeOn #bathChip,body.welcomeOn #gearBtn{opacit
 
 #dogrunExitPill{display:none;}
 #app.dogrun #dogrunExitPill{display:inline-flex;align-items:center;}
+#strollResumePill{display:none;}
+#app.strollPausePark:not(.dogrun):not(.strolling) #strollResumePill{display:inline-flex;align-items:center;font-size:18px;min-height:48px;background:#2F9E5B;color:#fff;border-color:#24804A;}
 
 #trimChip{pointer-events:auto;display:none;align-items:center;gap:6px;min-height:40px;background:var(--collar);border:2px solid #D45A1F;border-radius:14px;padding:5px 10px;
   font-size:calc(var(--fs-13) * var(--fit, 1));font-weight:800;color:#fff;box-shadow:0 2px 0 #D45A1F;white-space:nowrap;cursor:pointer;
@@ -1836,6 +1838,72 @@ body.guideQuiet #toast{visibility:hidden!important;}
 }
 #strollAsk.on{display:block;}
 
+#app.strollWalk #strollMapBtn{display:none;}
+#strollMiniMap{
+  position:absolute;right:calc(max(10px,var(--sa-r)) + 4px);top:calc(max(10px,var(--sa-t)) + 142px);
+  width:104px;height:104px;border-radius:16px;border:2px solid rgba(255,255,255,.85);
+  box-shadow:0 2px 6px rgba(0,0,0,.3);display:none;pointer-events:auto;cursor:pointer;background:#20313a;
+}
+
+#app.strollMapOpen #strollMiniMap{visibility:hidden;}
+#strollMiniMap.on{display:block;}
+
+#app.strollMini #toast{left:calc(50% - 58px);max-width:calc(100% - 148px);}
+#strollWalkHint{position:absolute;inset:0;display:none;pointer-events:none;}
+#strollWalkHint.on{display:block;}
+#strollWalkHint .arrow{
+  position:absolute;left:calc(max(10px,var(--sa-l)) + 26px);bottom:calc(max(10px,var(--sa-b)) + 112px);
+  width:30px;height:min(26vh,190px);border-radius:15px;
+  background:linear-gradient(0deg,rgba(255,255,255,0),rgba(255,255,255,.92));
+  animation:strollWalkArrow 1.6s ease-in-out infinite;
+}
+#strollWalkHint .arrow::before{
+  content:'';position:absolute;left:50%;top:-30px;transform:translateX(-50%);
+  border-left:30px solid transparent;border-right:30px solid transparent;border-bottom:34px solid #fff;
+  filter:drop-shadow(0 0 2px #3aa35b);
+}
+#strollWalkHint .finger{
+  position:absolute;left:calc(max(10px,var(--sa-l)) + 18px);bottom:calc(max(10px,var(--sa-b)) + 96px);
+  font-size:44px;line-height:1;animation:strollWalkFinger 1.6s ease-in-out infinite;
+}
+#strollWalkHint .label{
+  position:absolute;left:50%;transform:translateX(-50%);bottom:calc(max(10px,var(--sa-b)) + 64px);
+  background:rgba(20,28,34,.72);border-radius:14px;padding:7px 14px;white-space:nowrap;
+  color:#fff;font-weight:800;font-size:18px;
+}
+#strollWalkHint.right .arrow{left:auto;right:calc(max(10px,var(--sa-r)) + 26px);}
+#strollWalkHint.right .finger{left:auto;right:calc(max(10px,var(--sa-r)) + 18px);}
+@keyframes strollWalkFinger{0%{transform:translateY(0);opacity:0}15%{opacity:1}80%{transform:translateY(-150px);opacity:1}100%{transform:translateY(-160px);opacity:0}}
+@keyframes strollWalkArrow{0%,100%{opacity:.55}50%{opacity:1}}
+#strollGreetBtn{
+  position:absolute;left:50%;transform:translateX(-50%);
+  bottom:calc(max(10px,var(--sa-b)) + 66px);
+  display:none;pointer-events:auto;white-space:nowrap;
+  min-height:56px;font-size:22px;font-weight:900;padding:10px 26px;border-radius:30px;
+  background:var(--collar);color:#fff;border-color:#D45A1F;box-shadow:0 4px 0 #D45A1F;
+}
+#strollGreetBtn.on{display:block;}
+#strollGateBtn{
+  position:absolute;left:0;top:0;display:none;pointer-events:auto;
+  width:96px;height:96px;margin:-48px 0 0 -48px;border-radius:50%;
+  background:#2F9E5B;border:4px solid #fff;box-shadow:0 0 0 4px rgba(47,158,91,.45),0 4px 0 rgba(0,0,0,.25);
+  color:#fff;font-weight:900;flex-direction:column;align-items:center;justify-content:center;gap:0;
+  animation:strollGatePulse 1.4s ease-in-out infinite;
+}
+#strollGateBtn.on{display:flex;}
+#strollGateBtn i{font-style:normal;font-size:36px;line-height:1;}
+#strollGateBtn span{font-size:18px;line-height:1.2;}
+@keyframes strollGatePulse{0%,100%{box-shadow:0 0 0 4px rgba(47,158,91,.45),0 4px 0 rgba(0,0,0,.25)}50%{box-shadow:0 0 0 12px rgba(47,158,91,.2),0 4px 0 rgba(0,0,0,.25)}}
+
+#strollUi.act #strollBottom > :not(#strollQuitBtn):not(#strollShotBtn){display:none;}
+
+#app.strollWalk #strollForkUi{gap:14px;}
+#app.strollWalk #strollForkUi .pill{font-size:20px;font-weight:900;min-height:60px;min-width:140px;border-radius:22px;padding:8px 14px;}
+#app.strollWalk #strollForkUi .pill small{display:none;}
+#app.strollWalk #strollForkUi .pill:first-child span::before{content:'◀ ';}
+#app.strollWalk #strollForkUi .pill:last-child span::after{content:' ▶';}
+#app.strollWalk #strollAsk{font-size:18px;white-space:nowrap;bottom:calc(max(10px,var(--sa-b)) + 134px);}
+
 
 #strollMap{position:absolute;inset:0;z-index:21;display:none;background:rgba(18,26,32,.92);}
 #strollMap.on{display:block;}
@@ -1977,7 +2045,7 @@ body.guideQuiet #toast{visibility:hidden!important;}
 #treatBtn .snackN{display:inline-block;min-width:20px;margin-left:4px;padding:0 5px;border-radius:999px;background:#E2483D;color:#fff;font-size:13px;font-weight:800;line-height:20px;text-align:center;vertical-align:middle;}
 #treatBtn .snackN.zero{background:#B8ADA2;}
 </style>
-  <script type="module" crossorigin src="./assets/index-DI1Ak2nB.js"></script>
+  <script type="module" crossorigin src="./assets/index-CNVPSEhf.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/three-C1gisD2E.js">
 </head>
 <body>
@@ -2012,6 +2080,8 @@ body.guideQuiet #toast{visibility:hidden!important;}
     <button class="pill" id="fetchPill" style="display:none">🎾 とってこい</button>
     
     <button class="pill" id="dogrunExitPill">🌳 公園へ</button>
+    
+    <button class="pill" id="strollResumePill">🚶 さんぽの つづき</button>
   </div>
   
   <div id="hint"><span class="nobr">「🚶 おでかけ」</span>の<span class="nobr">「📷 写真の場所」</span>で いまいる所を とってみて！</div>
@@ -2053,6 +2123,13 @@ body.guideQuiet #toast{visibility:hidden!important;}
       <div id="strollLeft">あと 5:00</div>
     </div>
     
+    
+    <div id="strollWalkHint" aria-hidden="true"><div class="arrow"></div><div class="finger">👆</div><div class="label">うえへ なぞると あるく</div></div>
+    
+    <canvas id="strollMiniMap" role="button" aria-label="ちず を ひらく"></canvas>
+    <button class="pill" id="strollGreetBtn">👋 こんにちは</button>
+    
+    <button id="strollGateBtn" aria-label="ドッグランに はいる"><i>🐾</i><span>はいる</span></button>
     <div id="strollAsk">どっちに行く？</div>
     <div id="strollForkUi"></div>
     <div id="strollBottom">
