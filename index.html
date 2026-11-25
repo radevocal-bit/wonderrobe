@@ -55,6 +55,9 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 body{font-family:"M PLUS Rounded 1c","Hiragino Maru Gothic ProN",system-ui,sans-serif;background:var(--ink);}
 
 #app{width:100%;height:100dvh;position:relative;overflow:hidden;background:#BFE3F2;touch-action:manipulation;}
+
+#splashPre{position:fixed;inset:0;z-index:999;background:#fbf5e6;animation:wrPreGone 0s linear 12s forwards;}
+@keyframes wrPreGone{to{visibility:hidden;opacity:0;}}
 canvas{display:block;}
 #three canvas{touch-action:none;}
 
@@ -2052,10 +2055,11 @@ body.guideQuiet #toast{visibility:hidden!important;}
 #treatBtn .snackN{display:inline-block;min-width:20px;margin-left:4px;padding:0 5px;border-radius:999px;background:#E2483D;color:#fff;font-size:13px;font-weight:800;line-height:20px;text-align:center;vertical-align:middle;}
 #treatBtn .snackN.zero{background:#B8ADA2;}
 </style>
-  <script type="module" crossorigin src="./assets/index-7t3WDyB7.js"></script>
+  <script type="module" crossorigin src="./assets/index-C-9DBIQh.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/three-C1gisD2E.js">
 </head>
 <body>
+<div id="splashPre" aria-hidden="true"></div>
 <div id="app">
   <div id="three"></div>
   
