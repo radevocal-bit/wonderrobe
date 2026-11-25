@@ -188,6 +188,10 @@ body.welcomeOn #boneChip,body.welcomeOn #bathChip,body.welcomeOn #gearBtn{opacit
 
 #dogrunExitPill{display:none;}
 #app.dogrun #dogrunExitPill{display:inline-flex;align-items:center;}
+
+#dogrunInvite{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(var(--tab-total) + var(--float-gap) + 84px);z-index:9;
+  font:900 calc(19px * var(--zoom)) system-ui,sans-serif;color:#fff;background:#f08a3c;border:none;border-radius:999px;min-height:56px;padding:12px 26px;
+  box-shadow:0 5px 0 #c2621f,0 8px 18px rgba(0,0,0,.22);white-space:nowrap;pointer-events:auto;}
 #strollResumePill{display:none;}
 #app.strollPausePark:not(.dogrun):not(.strolling) #strollResumePill{display:inline-flex;align-items:center;font-size:18px;min-height:48px;background:#2F9E5B;color:#fff;border-color:#24804A;}
 
@@ -1440,7 +1444,7 @@ body.sheetOpen #shopPoses .pill{pointer-events:none;}
 #panel-home .tileThumbs{display:flex;gap:4px;flex:none;}
 #panel-home .tileThumbs:empty{display:none;}
 #panel-home .tileThumbs img{width:38px;height:38px;object-fit:cover;border-radius:8px;border:2px solid var(--ink);}
-#panel-home #homeGoRow,#panel-home #dogrunChoiceRow{grid-template-columns:1fr;gap:8px;width:100%;}
+#panel-home #homeGoRow,#panel-home #dogrunChoiceRow,#panel-home #parkChoiceRow{grid-template-columns:1fr;gap:8px;width:100%;}
 #panel-home #homeGoRow{display:grid;}
 #panel-home .row .wide{grid-column:1/-1;}
 
@@ -1521,6 +1525,9 @@ body.sheetOpen #shopPoses .pill{pointer-events:none;}
 .netTag.rusu{background:#fff;border-style:dashed;padding:1px 7px 1px 5px;gap:3px;opacity:.95;}
 .netTag.rusu i{display:none;}
 .netTag.rusu .rs{font-size:10px;font-weight:800;background:#E4EAEE;border-radius:999px;padding:0 5px;margin-left:2px;}
+
+.netTag.staff{background:#2f7d4f;border-color:#1f5a37;color:#fff;padding:1px 9px 1px 7px;}
+.netTag.staff i{display:none;}
 
 #stampBubbles{position:absolute;inset:0;z-index:7;pointer-events:none;overflow:hidden;}
 .stampBub{position:absolute;left:0;top:0;box-sizing:border-box;width:max-content;max-width:min(232px,calc(100vw - 32px));background:var(--cream);color:var(--ink);border:2.5px solid var(--ink);border-radius:16px;
@@ -2045,7 +2052,7 @@ body.guideQuiet #toast{visibility:hidden!important;}
 #treatBtn .snackN{display:inline-block;min-width:20px;margin-left:4px;padding:0 5px;border-radius:999px;background:#E2483D;color:#fff;font-size:13px;font-weight:800;line-height:20px;text-align:center;vertical-align:middle;}
 #treatBtn .snackN.zero{background:#B8ADA2;}
 </style>
-  <script type="module" crossorigin src="./assets/index-BcZZDPbR.js"></script>
+  <script type="module" crossorigin src="./assets/index-DyR0U_8t.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/three-C1gisD2E.js">
 </head>
 <body>
@@ -2352,11 +2359,16 @@ body.guideQuiet #toast{visibility:hidden!important;}
             <button class="pill wide" id="strollSemiBtn" style="display:none">🔀 分かれ道は 自分で</button>
           </div>
           
-          <button class="pill bigTile" id="dogrunTile"><i>🐕</i><span><b>ドッグラン</b><small>🌳 ひとりで（公園）・👥 ともだちと（番号で入る）</small></span></button>
+          
+          <button class="pill bigTile" id="parkTile"><i>🌳</i><span><b>公園</b><small>うちの子と すごす・レースも</small></span></button>
+          <div class="row" id="parkChoiceRow" style="display:none">
+            <button class="pill wide" id="parkGoBtn">🌳 公園へ いく</button>
+            <button class="pill wide" id="raceGoBtn">🚩 よびもどしレース</button>
+          </div>
+          <button class="pill bigTile" id="dogrunTile"><i>🐕</i><span><b>ドッグラン</b><small>ほかの 人の 子に あえる</small></span></button>
           <div class="row" id="dogrunChoiceRow" style="display:none">
-            <button class="pill wide" id="parkGoBtn">🌳 ひとりで（公園）</button>
-            <button class="pill wide" id="roomBtn">👥 ともだちと（番号で入る）</button>
-            <button class="pill wide" id="raceGoBtn">🏁 よびもどしレース</button>
+            <button class="pill wide" id="dogrunGoBtn">🐕 ドッグランへ いく</button>
+            <button class="pill wide" id="roomBtn">👥 ともだちと（ばんごうで はいる）</button>
           </div>
         </div>
         <div class="panelHead">ともだち・みつけもの</div>
