@@ -1,0 +1,1 @@
+import{_ as e}from"./three-8BEqX-oQ.js";e.enabled=!0;var t=747796405;function n(e){let n=Math.random;Math.random=()=>{t=t+1831565813|0;let e=Math.imul(t^t>>>15,1|t);return e=e+Math.imul(e^e>>>7,61|e)^e,((e^e>>>14)>>>0)/4294967296};try{return e()}finally{Math.random=n}}export{n as t};
