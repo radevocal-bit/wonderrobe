@@ -1523,6 +1523,10 @@ body.sheetOpen #shopPoses .pill{pointer-events:none;}
 
 #app.dogrun #toast{top:calc(var(--top-total) + 48px);}
 
+@media (orientation:portrait){#app.dogrun #toast{left:12px;transform:none;max-width:calc(100% - 128px);}}
+
+@media (orientation:landscape){#dogrunInvite{left:calc(12px + env(safe-area-inset-left));transform:none;bottom:calc(14px + env(safe-area-inset-bottom));font-size:16px;min-height:48px;padding:8px 18px;}}
+
 #netTags{position:absolute;inset:0;z-index:6;pointer-events:none;overflow:hidden;clip-path:inset(var(--sa-t) 0 0 0);}
 .netTag{position:absolute;left:0;top:0;display:flex;align-items:center;gap:4px;background:var(--cream);border:2px solid var(--ink);border-radius:999px;
   padding:2px 9px 2px 5px;font-size:12px;font-weight:800;color:var(--ink);white-space:nowrap;box-shadow:0 2px 0 rgba(43,58,70,.25);will-change:transform;}
@@ -2058,8 +2062,8 @@ body.guideQuiet #toast{visibility:hidden!important;}
 #treatBtn .snackN{display:inline-block;min-width:20px;margin-left:4px;padding:0 5px;border-radius:999px;background:#E2483D;color:#fff;font-size:13px;font-weight:800;line-height:20px;text-align:center;vertical-align:middle;}
 #treatBtn .snackN.zero{background:#B8ADA2;}
 </style>
-  <script type="module" crossorigin src="./assets/index-AdN16Hs1.js"></script>
-  <link rel="modulepreload" crossorigin href="./assets/three-C1gisD2E.js">
+  <script type="module" crossorigin src="./assets/index-B--AqUhF.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/three-Cw3An2dU.js">
 </head>
 <body>
 <div id="splashPre" aria-hidden="true"></div>
@@ -2143,7 +2147,7 @@ body.guideQuiet #toast{visibility:hidden!important;}
     <canvas id="strollMiniMap" role="button" aria-label="ちず を ひらく"></canvas>
     <button class="pill" id="strollGreetBtn">👋 こんにちは</button>
     
-    <button id="strollGateBtn" aria-label="ドッグランに はいる"><i>🐾</i><span>はいる</span></button>
+    <button id="strollGateBtn" aria-label="わんにゃごランに はいる"><i>🐾</i><span>はいる</span></button>
     <div id="strollAsk">どっちに行く？</div>
     <div id="strollForkUi"></div>
     <div id="strollBottom">
@@ -2261,6 +2265,7 @@ body.guideQuiet #toast{visibility:hidden!important;}
         <button class="pill" data-slot="head" data-item="capDog">🧢 キャップ dog</button>
         <button class="pill" data-slot="head" data-item="capD">🧢 キャップ D</button>
         <button class="pill" data-slot="head" data-item="capPinkFrill">🧢 キャップ ピンクフリル</button>
+        <button class="pill" data-slot="head" data-item="capPinkFrill8">🧢 キャップ ピンクフリル 8まい</button>
         <button class="pill" data-slot="head" data-item="capCharcoalPink">🧢 キャップ チャコール ピンク</button>
         <button class="pill" data-slot="body" data-item="knitArgyle">🧥 ニット アーガイル</button>
         <button class="pill" data-slot="body" data-item="knitBorderBlue">🧥 袖つきニット ボーダー あお</button>
@@ -2284,7 +2289,7 @@ body.guideQuiet #toast{visibility:hidden!important;}
       <div class="page row panel col" id="panel-ask">
         
         
-        <div class="row" id="askRunRow" style="display:none"><button class="pill hero wide" id="dogrunBtn">🐕 ドッグランへ（よその子と あそぶ）</button></div>
+        <div class="row" id="askRunRow" style="display:none"><button class="pill hero wide" id="dogrunBtn">🐕 わんにゃごランへ（よその子と あそぶ）</button></div>
         <div class="askNote">🎤 <span class="nobr">「はなす」</span>で 言っても OK！</div>
         <div class="panelHead">たべる</div>
         <div class="row">
@@ -2386,9 +2391,9 @@ body.guideQuiet #toast{visibility:hidden!important;}
             <button class="pill wide" id="parkGoBtn">🌳 公園へ いく</button>
             <button class="pill wide" id="raceGoBtn">🚩 よびもどしレース</button>
           </div>
-          <button class="pill bigTile" id="dogrunTile"><i>🐕</i><span><b>ドッグラン</b><small>ほかの 人の 子に あえる</small></span></button>
+          <button class="pill bigTile" id="dogrunTile"><i>🐕</i><span><b>わんにゃごラン</b><small>ほかの 人の 子に あえる</small></span></button>
           <div class="row" id="dogrunChoiceRow" style="display:none">
-            <button class="pill wide" id="dogrunGoBtn">🐕 ドッグランへ いく</button>
+            <button class="pill wide" id="dogrunGoBtn">🐕 わんにゃごランへ いく</button>
             <button class="pill wide" id="roomBtn">👥 ともだちと（ばんごうで はいる）</button>
           </div>
         </div>
