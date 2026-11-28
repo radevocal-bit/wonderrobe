@@ -1822,7 +1822,9 @@ body.guideQuiet #toast{visibility:hidden!important;}
 #strollUi{position:absolute;inset:0;z-index:22;display:none;pointer-events:none;}
 #strollUi.on{display:block;}
 
-#app.strolling #toast{top:calc(var(--top-total) + 48px);}
+#app.strolling #toast{top:calc(var(--top-total) + 70px);}
+
+#app.strolling.boneDoneSay #toast{top:calc(var(--top-total) + 106px);}
 #strollTop{
   position:absolute;left:50%;transform:translateX(-50%);
   top:calc(max(10px,var(--sa-t)) + 4px);
@@ -1835,6 +1837,16 @@ body.guideQuiet #toast{visibility:hidden!important;}
 #strollBarOuter{width:min(58vw,240px);height:7px;border-radius:5px;background:rgba(255,255,255,.28);overflow:hidden;}
 #strollBar{height:100%;width:0;border-radius:5px;background:linear-gradient(90deg,#FFC46B,#FF7A3C);transition:width .25s linear;}
 #strollLeft{color:#cfe0ea;font-weight:800;font-size:13px;}
+
+#strollBones{position:relative;color:#fff;font-weight:800;font-size:13px;background:rgba(255,255,255,.14);border-radius:10px;padding:1px 10px;transition:background .3s,box-shadow .3s;}
+#strollBones.pop{animation:strollBonePop .7s ease-out;}
+@keyframes strollBonePop{0%{transform:scale(1);box-shadow:0 0 0 0 #ffd36b;}30%{transform:scale(1.25);box-shadow:0 0 12px 3px #ffd36b;background:rgba(255,211,107,.45);}100%{transform:scale(1);box-shadow:0 0 0 0 rgba(255,211,107,0);}}
+#strollBones .plus{position:absolute;left:100%;top:0;margin-left:4px;color:#ffe08a;font-size:13px;opacity:0;text-shadow:0 1px 2px #000;}
+#strollBones .plus.on{animation:strollBonePlus 1s ease-out;}
+@keyframes strollBonePlus{0%{opacity:1;transform:translateY(4px);}70%{opacity:1;}100%{opacity:0;transform:translateY(-10px);}}
+#strollBones.done{background:rgba(160,160,160,.35);color:#d8dde0;}
+#strollBoneDone{display:none;color:#fff3d6;font-weight:800;font-size:12px;line-height:1.35;text-align:center;}
+#strollBoneDone.on{display:block;}
 #strollBottom{
   position:absolute;left:0;right:0;
   bottom:calc(max(10px,var(--sa-b)) + 6px);
@@ -2074,7 +2086,7 @@ body.guideQuiet #toast{visibility:hidden!important;}
 #treatBtn .snackN{display:inline-block;min-width:20px;margin-left:4px;padding:0 5px;border-radius:999px;background:#E2483D;color:#fff;font-size:13px;font-weight:800;line-height:20px;text-align:center;vertical-align:middle;}
 #treatBtn .snackN.zero{background:#B8ADA2;}
 </style>
-  <script type="module" crossorigin src="./assets/index-DD8KxaAy.js"></script>
+  <script type="module" crossorigin src="./assets/index-DuF1wZ-J.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/three-8BEqX-oQ.js">
   <link rel="modulepreload" crossorigin href="./assets/quietRandom-eTbCPxWi.js">
 </head>
@@ -2152,6 +2164,8 @@ body.guideQuiet #toast{visibility:hidden!important;}
       <div id="strollWhere">おうちの前</div>
       <div id="strollBarOuter"><div id="strollBar"></div></div>
       <div id="strollLeft">あと 5:00</div>
+      <div id="strollBones"><span class="n">🦴 0/18</span><span class="plus"></span></div>
+      <div id="strollBoneDone">きょうの さんぽの ほねは おしまい。<br>また あしたね</div>
     </div>
     
     
@@ -2261,8 +2275,8 @@ body.guideQuiet #toast{visibility:hidden!important;}
       
       
       <div class="page row panel" id="panel-closet" hidden>
-        <button class="pill" data-slot="eyes" data-item="glasses">🕶 グラサン</button>
-        <button class="pill" data-slot="eyes" data-item="glassesTint">👓 うすいろグラサン</button>
+        <button class="pill" data-slot="eyes" data-item="glasses">🕶 サングラス</button>
+        <button class="pill" data-slot="eyes" data-item="glassesTint">👓 うすいろサングラス</button>
         <button class="pill" data-slot="head" data-item="strawhat">👒 むぎわら</button>
         <button class="pill" data-slot="neck" data-item="bandana">🔺 バンダナ</button>
         <button class="pill" data-slot="head" data-item="cap">🧢 キャップ</button>
