@@ -1836,6 +1836,8 @@ body.guideQuiet #toast{visibility:hidden!important;}
 #strollWhere{color:#fff;font-weight:800;font-size:13px;letter-spacing:.04em;}
 #strollBarOuter{width:min(58vw,240px);height:7px;border-radius:5px;background:rgba(255,255,255,.28);overflow:hidden;}
 #strollBar{height:100%;width:0;border-radius:5px;background:linear-gradient(90deg,#FFC46B,#FF7A3C);transition:width .25s linear;}
+
+#strollRow{display:flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;}
 #strollLeft{color:#cfe0ea;font-weight:800;font-size:13px;}
 
 #strollBones{position:relative;color:#fff;font-weight:800;font-size:13px;background:rgba(255,255,255,.14);border-radius:10px;padding:1px 10px;transition:background .3s,box-shadow .3s;}
@@ -2086,7 +2088,7 @@ body.guideQuiet #toast{visibility:hidden!important;}
 #treatBtn .snackN{display:inline-block;min-width:20px;margin-left:4px;padding:0 5px;border-radius:999px;background:#E2483D;color:#fff;font-size:13px;font-weight:800;line-height:20px;text-align:center;vertical-align:middle;}
 #treatBtn .snackN.zero{background:#B8ADA2;}
 </style>
-  <script type="module" crossorigin src="./assets/index-DNKtr-K9.js"></script>
+  <script type="module" crossorigin src="./assets/index-B72l1bkp.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/three-8BEqX-oQ.js">
   <link rel="modulepreload" crossorigin href="./assets/quietRandom-eTbCPxWi.js">
 </head>
@@ -2163,8 +2165,10 @@ body.guideQuiet #toast{visibility:hidden!important;}
     <div id="strollTop">
       <div id="strollWhere">おうちの前</div>
       <div id="strollBarOuter"><div id="strollBar"></div></div>
-      <div id="strollLeft">あと 5:00</div>
-      <div id="strollBones"><span class="n">🦴 0/18</span><span class="plus"></span></div>
+      <div id="strollRow">
+        <div id="strollLeft">あと 5:00</div>
+        <div id="strollBones"><span class="n">🦴 0/18</span><span class="plus"></span></div>
+      </div>
       <div id="strollBoneDone">きょうの さんぽの ほねは おしまい。<br>また あしたね</div>
     </div>
     
